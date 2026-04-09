@@ -1,506 +1,504 @@
-import io
-import re
+# engine.py
+import io, re
 from decimal import Decimal, InvalidOperation
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple, Optional
 from urllib.parse import parse_qs, urlparse
 
-import fitz
+import fitz  # PyMuPDF
 import pandas as pd
 import requests
 from PIL import Image
+from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
-from reportlab.pdfgen import canvas
 
+# ================= CONFIG =================
+MASTER_URL_DEFAULT = "https://docs.google.com/spreadsheets/d/1ILxRMeDewtfLGckkPcY2CHHXiBtKK4Gc__lTNUZxGis/edit?gid=727982747#gid=727982747"
 
-A6_W_MM = 105
-A6_H_MM = 148
-MARGIN_MM = 3
-BOTTOM_PANEL_MM = 32
-WARNING_BANNER_H_MM = 6
-LINE_HEIGHT_MM = 3.6
-QTY_RIGHT_PAD_MM = 3
+A6_W_MM, A6_H_MM = 105, 148
+
+# >>> TUNING TAMPILAN SESUAI GAMBAR
+MARGIN_MM = 3                 # Margin pinggir kertas
+BOTTOM_PANEL_MM = 32          # Tinggi area panel produk
+WARNING_BANNER_H_MM = 6       # [UPDATE] Tinggi banner hitam sedikit diperbesar agar teks bold muat
+
+# Line height rapat (3.6mm) & padding kanan
+LINE_HEIGHT_MM, QTY_RIGHT_PAD_MM = 3.6, 3  
+
+SCALE_LOGO_PATH, SCALE_LOGO_W_MM, SCALE_LOGO_H_MM = "scale_logo.png", 16, 8
+
 QTY_COL_W_MM = 22
 NAME_GAP_MM = 3
 
-
-def safe_colname(col_name) -> str:
-    col_name = str(col_name).strip()
-    if col_name == "" or col_name.lower().startswith("unnamed"):
-        return col_name
-    return re.sub(r"\s+", " ", col_name)
+# Mode gambar resi: "contain" (aman) atau "cover" (full)
+RESI_FIT_MODE = "contain"
 
 
-def dedupe_columns(columns: List[str]) -> List[str]:
-    seen: Dict[str, int] = {}
-    out: List[str] = []
-    for col in columns:
-        col0 = str(col).strip() or "Unnamed"
-        if col0 not in seen:
-            seen[col0] = 1
-            out.append(col0)
+# ================= UTILS =================
+def safe_colname(c) -> str:
+    c = str(c).strip()
+    if c == "" or c.lower().startswith("unnamed"):
+        return c
+    return re.sub(r"\s+", " ", c)
+
+def dedupe_columns(cols: List[str]) -> List[str]:
+    seen, out = {}, []
+    for c in cols:
+        c0 = str(c).strip() or "Unnamed"
+        if c0 not in seen:
+            seen[c0] = 1
+            out.append(c0)
         else:
-            seen[col0] += 1
-            out.append(f"{col0}__{seen[col0]}")
+            seen[c0] += 1
+            out.append(f"{c0}__{seen[c0]}")
     return out
-
 
 def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    out.columns = [safe_colname(c) for c in out.columns]
-    out.columns = dedupe_columns(list(out.columns))
-    return out
+    df = df.copy()
+    df.columns = [safe_colname(c) for c in df.columns]
+    df.columns = dedupe_columns(list(df.columns))
+    return df
 
-
-def _fix_numeric_string(value: str) -> str:
-    if not value:
-        return value
-    value = value.strip()
-    if re.fullmatch(r"\d+\.0+", value):
-        return value.split(".", 1)[0]
-    if re.fullmatch(r"\d+(\.\d+)?[eE][+\-]?\d+", value):
+def _fix_numeric_string(s: str) -> str:
+    if not s:
+        return s
+    s0 = s.strip()
+    if re.fullmatch(r"\d+\.0+", s0):
+        return s0.split(".", 1)[0]
+    if re.fullmatch(r"\d+(\.\d+)?[eE][\+\-]?\d+", s0):
         try:
-            dec = Decimal(value)
-            text = format(dec, "f")
-            if "." in text:
-                text = text.split(".", 1)[0]
-            return text
+            d = Decimal(s0)
+            s_int = format(d, "f")
+            if "." in s_int:
+                s_int = s_int.split(".", 1)[0]
+            return s_int
         except (InvalidOperation, ValueError):
-            return value
-    return value
+            return s0
+    return s0
 
-
-def normalize_resi(value: str) -> str:
-    if not value:
+def normalize_resi(s: str) -> str:
+    if not s:
         return ""
-    value = _fix_numeric_string(str(value).strip()).upper()
-    return re.sub(r"[^A-Z0-9\-/]", "", value)
+    s = _fix_numeric_string(str(s).strip()).upper()
+    return re.sub(r"[^A-Z0-9\-/]", "", s)
 
+def canon_resi(s: str) -> str:
+    s = normalize_resi(s)
+    return re.sub(r"[-/]", "", s) if s else ""
 
-def canon_resi(value: str) -> str:
-    resi = normalize_resi(value)
-    return re.sub(r"[-/]", "", resi) if resi else ""
-
-
-def normalize_phone(phone: str) -> str:
-    if not phone:
+def normalize_phone(p: str) -> str:
+    if not p:
         return ""
-    phone = re.sub(r"[^\d\+]", "", str(phone).strip()).replace("+", "")
-    if not phone:
+    p = re.sub(r"[^\d\+]", "", str(p).strip()).replace("+", "")
+    if not p:
         return ""
-    if phone.startswith("0"):
-        phone = "62" + phone[1:]
-    elif phone.startswith("8"):
-        phone = "62" + phone
-    elif phone.startswith("620"):
-        phone = "62" + phone[3:]
-    return phone
+    if p.startswith("0"):
+        p = "62" + p[1:]
+    elif p.startswith("8"):
+        p = "62" + p
+    elif p.startswith("620"):
+        p = "62" + p[3:]
+    return p
 
+def trunc(s: str, n: int) -> str:
+    s = (s or "").strip()
+    return s if len(s) <= n else s[: max(0, n - 1)] + "…"
 
-def trunc(text: str, limit: int) -> str:
-    text = (text or "").strip()
-    return text if len(text) <= limit else text[: max(0, limit - 3)] + "..."
-
+def _find_col(df: pd.DataFrame, contains: List[str]) -> Optional[str]:
+    for c in df.columns:
+        cl = str(c).lower()
+        if any(k in cl for k in contains):
+            return c
+    return None
 
 def format_consumable_box(code_raw: str) -> str:
     code = (code_raw or "").strip()
     if not code:
         return "Consumable Box"
-    code_upper = code.upper()
-    match_hb = re.match(r"^(\d{1,2})CBHB", code_upper)
-    if match_hb:
-        return f"Consumable Box HB {match_hb.group(1)} [{code}]"
-    match_gm = re.match(r"^(\d{1,2})CBGM", code_upper)
-    if match_gm:
-        return f"Consumable Box GM {match_gm.group(1)} [{code}]"
+    u = code.upper()
+    m_hb = re.match(r"^(\d{1,2})CBHB", u)
+    if m_hb:
+        n = m_hb.group(1)
+        return f"Consumable Box HB {n} [{code}]"
+    m_gm = re.match(r"^(\d{1,2})CBGM", u)
+    if m_gm:
+        n = m_gm.group(1)
+        return f"Consumable Box GM {n} [{code}]"
     return f"Consumable Box [{code}]"
 
 
-def wrap_text_to_width(
-    pdf_canvas: canvas.Canvas,
-    text: str,
-    max_width: float,
-    font_name: str,
-    font_size: float,
-) -> List[str]:
+# ================= TEXT WRAP =================
+def wrap_text_to_width(c: canvas.Canvas, text: str, max_w: float, font_name: str, font_size: float) -> List[str]:
     text = (text or "").strip()
     if not text:
         return [""]
 
-    pdf_canvas.setFont(font_name, font_size)
+    c.setFont(font_name, font_size)
 
-    def fits(value: str) -> bool:
-        return pdf_canvas.stringWidth(value, font_name, font_size) <= max_width
+    def fits(s: str) -> bool:
+        return c.stringWidth(s, font_name, font_size) <= max_w
 
     words = text.split()
     lines: List[str] = []
-    current = ""
+    cur = ""
 
-    for word in words:
-        if not current:
-            if fits(word):
-                current = word
+    for w in words:
+        if not cur:
+            if fits(w):
+                cur = w
             else:
                 chunk = ""
-                for ch in word:
+                for ch in w:
                     if fits(chunk + ch):
                         chunk += ch
                     else:
                         if chunk:
                             lines.append(chunk)
                         chunk = ch
-                current = chunk
+                cur = chunk
         else:
-            test = f"{current} {word}".strip()
+            test = (cur + " " + w).strip()
             if fits(test):
-                current = test
+                cur = test
             else:
-                lines.append(current)
-                if fits(word):
-                    current = word
+                lines.append(cur)
+                if fits(w):
+                    cur = w
                 else:
                     chunk = ""
-                    for ch in word:
+                    for ch in w:
                         if fits(chunk + ch):
                             chunk += ch
                         else:
                             if chunk:
                                 lines.append(chunk)
                             chunk = ch
-                    current = chunk
+                    cur = chunk
 
-    if current:
-        lines.append(current)
+    if cur:
+        lines.append(cur)
     return lines
 
 
+# ================= GOOGLE SHEETS =================
 def extract_gsheet_id_and_gid(url: str):
     if not url:
         return None, None
     url = url.strip()
-    match = re.search(r"/spreadsheets/d/([a-zA-Z0-9-_]+)", url)
-    sheet_id = match.group(1) if match else None
+    m = re.search(r"/spreadsheets/d/([a-zA-Z0-9-_]+)", url)
+    sheet_id = m.group(1) if m else None
     gid = None
     try:
-        parsed = urlparse(url)
-        query = parse_qs(parsed.query)
-        if "gid" in query and query["gid"]:
-            gid = query["gid"][0]
-        if gid is None and parsed.fragment:
-            fragment = parse_qs(parsed.fragment)
-            if "gid" in fragment and fragment["gid"]:
-                gid = fragment["gid"][0]
+        u = urlparse(url)
+        q = parse_qs(u.query)
+        if "gid" in q and q["gid"]:
+            gid = q["gid"][0]
+        if gid is None and u.fragment:
+            frag = parse_qs(u.fragment)
+            if "gid" in frag and frag["gid"]:
+                gid = frag["gid"][0]
     except Exception:
         pass
     return sheet_id, gid
 
-
 def _fetch_gsheet_csv_bytes(sheet_id: str, gid: str) -> bytes:
     export_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export"
     headers = {"User-Agent": "Mozilla/5.0", "Accept": "text/csv,application/octet-stream"}
-    response = requests.get(export_url, params={"format": "csv", "gid": gid}, headers=headers, timeout=30)
-    content_type = (response.headers.get("content-type") or "").lower()
-    if response.status_code != 200 or "text/html" in content_type:
-        raise PermissionError("Gagal ambil Google Sheets. Pastikan akses link: Anyone with the link.")
-    return response.content
-
+    r = requests.get(export_url, params={"format": "csv", "gid": gid}, headers=headers, timeout=30)
+    if r.status_code != 200 or "text/html" in (r.headers.get("content-type") or "").lower():
+        raise PermissionError("Gagal ambil Google Sheets. Pastikan Anyone with the link -> Viewer.")
+    return r.content
 
 def fetch_gsheet_df(sheet_url: str) -> pd.DataFrame:
     sheet_id, gid = extract_gsheet_id_and_gid(sheet_url)
     if not sheet_id or not gid:
         raise ValueError("Gagal menemukan Sheet ID atau GID dari link.")
-    raw = _fetch_gsheet_csv_bytes(sheet_id, gid)
-    df = pd.read_csv(io.BytesIO(raw), dtype=str, keep_default_na=False)
+    df = pd.read_csv(io.BytesIO(_fetch_gsheet_csv_bytes(sheet_id, gid)), dtype=str, keep_default_na=False)
     return normalize_columns(df)
 
 
+# ================= UPLOAD TABLE =================
 def read_uploaded_table_bytes(filename: str, file_bytes: bytes, sheet_name=None) -> pd.DataFrame:
-    lower = filename.lower()
+    name = filename.lower()
     bio = io.BytesIO(file_bytes)
-    if lower.endswith(".csv"):
+    if name.endswith(".csv"):
         df = pd.read_csv(bio, dtype=str, keep_default_na=False)
-    elif lower.endswith(".tsv"):
+    elif name.endswith(".tsv"):
         df = pd.read_csv(bio, sep="\t", dtype=str, keep_default_na=False)
-    elif lower.endswith(".xlsx") or lower.endswith(".xls"):
+    elif name.endswith(".xlsx") or name.endswith(".xls"):
         df = pd.read_excel(bio, sheet_name=sheet_name, dtype=str, keep_default_na=False)
     else:
-        raise ValueError("Format tidak didukung. Gunakan xlsx/xls/csv/tsv.")
+        raise ValueError("Format tidak didukung. Pakai xlsx/xls/csv/tsv.")
     return normalize_columns(df)
 
 
+# ================= PDF TEXT EXTRACT =================
 def extract_page_text_strong(page: fitz.Page) -> str:
     parts = []
     try:
-        text = (page.get_text("text") or "").strip()
-        if text:
-            parts.append(text)
+        t = (page.get_text("text") or "").strip()
+        if t:
+            parts.append(t)
     except Exception:
         pass
     try:
         blocks = page.get_text("blocks") or []
-        block_text = "\n".join([b[4] for b in blocks if len(b) > 4 and isinstance(b[4], str)]).strip()
-        if block_text:
-            parts.append(block_text)
+        bt = "\n".join([b[4] for b in blocks if len(b) > 4 and isinstance(b[4], str)]).strip()
+        if bt:
+            parts.append(bt)
     except Exception:
         pass
     try:
         words = page.get_text("words") or []
-        word_text = " ".join([w[4] for w in words if len(w) > 4 and isinstance(w[4], str)]).strip()
-        if word_text:
-            parts.append(word_text)
+        wt = " ".join([w[4] for w in words if len(w) > 4 and isinstance(w[4], str)]).strip()
+        if wt:
+            parts.append(wt)
     except Exception:
         pass
     return re.sub(r"\n{3,}", "\n\n", "\n".join([p for p in parts if p])).strip()
 
-
 def _page_content_rect(page: fitz.Page, pad: float = 6.0) -> fitz.Rect:
+    """
+    Cari bounding box konten (gabungan text blocks) supaya whitespace besar kepotong.
+    pad dalam POINT (bukan mm). Default 6pt ~ 2.1mm.
+    """
     rect = None
+    
     try:
+        # 1. Text & Image Blocks
         blocks = page.get_text("blocks") or []
-        for block in blocks:
-            if len(block) < 4:
+        for b in blocks:
+            if len(b) < 4:
                 continue
-            x0, y0, x1, y1 = block[0], block[1], block[2], block[3]
+            x0, y0, x1, y1 = b[0], b[1], b[2], b[3]
             if x1 > x0 and y1 > y0:
                 r = fitz.Rect(x0, y0, x1, y1)
                 rect = r if rect is None else (rect | r)
     except Exception:
         pass
-
+        
     try:
+        # 2. Vector Drawings (Barcode sering berupa garis/vector)
         drawings = page.get_drawings() or []
-        for drawing in drawings:
-            drect = drawing.get("rect")
-            if drect and drect.x1 > drect.x0 and drect.y1 > drect.y0:
-                rect = drect if rect is None else (rect | drect)
+        for d in drawings:
+            dr = d.get("rect")
+            if dr and dr.x1 > dr.x0 and dr.y1 > dr.y0:
+                rect = dr if rect is None else (rect | dr)
     except Exception:
         pass
 
     if rect is None:
         return page.rect
 
-    return fitz.Rect(
+    rect = fitz.Rect(
         max(page.rect.x0, rect.x0 - pad),
         max(page.rect.y0, rect.y0 - pad),
         min(page.rect.x1, rect.x1 + pad),
         min(page.rect.y1, rect.y1 + pad),
     )
-
+    return rect
 
 def pdf_page_to_png_bytes(doc: fitz.Document, page0: int, zoom: float = 2.5) -> bytes:
+    """
+    Render PDF page -> PNG, tapi di-crop dulu ke area konten.
+    Ini yang bikin label besar seperti gambar ke-2.
+    """
     page = doc.load_page(page0)
     clip = _page_content_rect(page, pad=6.0)
-    pixmap = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=False, clip=clip)
-    return pixmap.tobytes("png")
+
+    pix = page.get_pixmap(
+        matrix=fitz.Matrix(zoom, zoom),
+        alpha=False,
+        clip=clip
+    )
+    return pix.tobytes("png")
+
+def pdf_page_count(pdf_bytes: bytes) -> int:
+    with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
+        return doc.page_count
+
+def load_scale_logo_bytes() -> Optional[bytes]:
+    try:
+        with open(SCALE_LOGO_PATH, "rb") as f:
+            return f.read()
+    except Exception:
+        return None
 
 
-def extract_phone_candidates(text: str) -> List[str]:
+# ================= CANDIDATE EXTRACTORS =================
+def extract_phone_candidates(text: str):
     if not text:
         return []
-    compact = re.sub(r"\s+", " ", re.sub(r"[^\d\+]", " ", text))
-    raw = re.findall(r"(?:\+?62|0)?8\d{7,12}", compact)
-    unique = []
-    seen = set()
-    for item in raw:
-        normalized = normalize_phone(item)
-        if normalized and normalized not in seen:
-            seen.add(normalized)
-            unique.append(normalized)
-    return unique
+    raw = re.findall(r"(?:\+?62|0)?8\d{7,12}", re.sub(r"\s+", " ", re.sub(r"[^\d\+]", " ", text)))
+    return list(dict.fromkeys(filter(None, map(normalize_phone, raw))))
 
-
-def extract_name_candidates(text: str) -> List[str]:
+def extract_name_candidates(text: str):
     if not text:
         return []
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
-    candidates: List[str] = []
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    candidates = []
     keys = ["nama", "penerima", "consignee", "recipient", "to:"]
-
-    for index, line in enumerate(lines):
-        if any(key in line.lower() for key in keys):
-            split_line = re.split(r":", line, maxsplit=1)
-            if len(split_line) == 2 and split_line[1].strip() and len(split_line[1].strip()) >= 2:
-                candidates.append(split_line[1].strip())
-            if index + 1 < len(lines):
-                nxt = lines[index + 1].strip()
+    for i, ln in enumerate(lines):
+        if any(k in ln.lower() for k in keys):
+            m = re.split(r":", ln, maxsplit=1)
+            if len(m) == 2 and m[1].strip() and len(m[1].strip()) >= 2:
+                candidates.append(m[1].strip())
+            if i + 1 < len(lines):
+                nxt = lines[i + 1].strip()
                 if nxt and not re.search(r"\d{5,}", nxt) and len(nxt) <= 80:
                     candidates.append(nxt)
+    for ln in lines[:3]:
+        if 2 <= len(ln) <= 80 and not re.search(r"\d{5,}", ln) and not any(
+            x in ln.lower() for x in ["resi", "awb", "shipping", "ekspedisi"]
+        ):
+            candidates.append(ln)
+    return list(dict.fromkeys(re.sub(r"\s+", " ", str(c).strip()) for c in candidates if str(c).strip()))
 
-    for line in lines[:3]:
-        if 2 <= len(line) <= 80 and not re.search(r"\d{5,}", line):
-            lowered = line.lower()
-            if not any(x in lowered for x in ["resi", "awb", "shipping", "ekspedisi"]):
-                candidates.append(line)
-
-    output = []
-    seen = set()
-    for item in candidates:
-        clean = re.sub(r"\s+", " ", str(item).strip())
-        if clean and clean not in seen:
-            seen.add(clean)
-            output.append(clean)
-    return output
-
-
-def extract_resi_candidates(text: str) -> List[str]:
+def extract_resi_candidates(text: str):
     if not text:
         return []
-    upper = text.upper()
+    t = text.upper()
 
-    easy = re.findall(r"\b[A-Z0-9]{2,5}(?:-[A-Z0-9]{2,8}){1,3}\b", upper)
-    cands = re.findall(r"[A-Z0-9][A-Z0-9\-/]{7,28}", upper)
-    cands += re.findall(r"\b\d{10,20}\b", upper)
-    cands = easy + cands
+    ez = re.findall(r"\b[A-Z0-9]{2,5}(?:-[A-Z0-9]{2,8}){1,3}\b", t)
+    cands = re.findall(r"[A-Z0-9][A-Z0-9\-/]{7,28}", t)
+    for s in re.findall(r"(?:[A-Z0-9]\s*){8,32}", t):
+        s2 = re.sub(r"\s+", "", s)
+        if 8 <= len(s2) <= 30:
+            cands.append(s2)
+    cands += re.findall(r"\b\d{10,20}\b", t)
+    cands = ez + cands
 
     def looks_like_product_or_box(code: str) -> bool:
-        compact = code.replace("-", "").replace("/", "")
-        if re.fullmatch(r"(GM|EC|GMP|PB|GN)\d{6,12}", compact):
+        u = code.replace("-", "").replace("/", "")
+        if re.fullmatch(r"(GM|EC|GMP|PB|GN)\d{6,12}", u):
             return True
-        if "CBHB" in compact or "CBGM" in compact:
+        if "CBHB" in u or "CBGM" in u:
             return True
         return False
 
-    out: List[str] = []
-    seen = set()
-    for raw in cands:
-        normalized = normalize_resi(raw)
-        if len(normalized) < 6:
+    out, seen = [], set()
+    for r0 in cands:
+        r1 = normalize_resi(r0)
+        if len(r1) < 6:
             continue
-        if looks_like_product_or_box(normalized):
+        if looks_like_product_or_box(r1):
             continue
 
-        digit_count = sum(ch.isdigit() for ch in normalized)
-        alpha_count = sum(ch.isalpha() for ch in normalized)
-        has_dash = "-" in normalized
+        digit_cnt = sum(ch.isdigit() for ch in r1)
+        alpha_cnt = sum(ch.isalpha() for ch in r1)
+        has_dash = "-" in r1
+
         if has_dash:
-            if len(normalized) < 8:
+            if len(r1) < 8:
                 continue
-            if (digit_count + alpha_count) < 8:
+            if (digit_cnt + alpha_cnt) < 8:
                 continue
         else:
-            if digit_count < 6:
+            if digit_cnt < 6:
                 continue
 
-        if normalized not in seen:
-            seen.add(normalized)
-            out.append(normalized)
+        if r1 not in seen:
+            seen.add(r1)
+            out.append(r1)
 
-        canonical = canon_resi(normalized)
-        if canonical and canonical not in seen:
-            seen.add(canonical)
-            out.append(canonical)
+        cr = canon_resi(r1)
+        if cr and cr not in seen:
+            seen.add(cr)
+            out.append(cr)
 
-    out.sort(key=lambda item: (1 if "-" in item else 0, sum(c.isdigit() for c in item), len(item)), reverse=True)
+    def rank(x: str):
+        return (1 if "-" in x else 0, sum(c.isdigit() for c in x), len(x))
+
+    out.sort(key=rank, reverse=True)
     return out
 
 
+# ================= LOOKUP + MATCHING =================
 def build_lookup_indexes(df: pd.DataFrame, col_resi: str, col_nama: str, col_telp: str):
     resi_index: Dict[str, List[int]] = {}
     phone_index: Dict[str, List[int]] = {}
     name_index: Dict[str, List[int]] = {}
 
     if col_resi in df.columns:
-        values = df[col_resi].astype(str).fillna("").map(normalize_resi).tolist()
-        for idx, key in enumerate(values):
+        for i, key in enumerate(df[col_resi].astype(str).fillna("").map(normalize_resi).tolist()):
             if not key:
                 continue
-            for variant in {key, canon_resi(key)}:
-                if variant:
-                    resi_index.setdefault(variant, []).append(idx)
+            for k in {key, canon_resi(key)}:
+                if not k:
+                    continue
+                resi_index.setdefault(k, []).append(i)
 
     if col_telp in df.columns:
-        values = df[col_telp].astype(str).fillna("").map(normalize_phone).tolist()
-        for idx, key in enumerate(values):
-            if key:
-                phone_index.setdefault(key, []).append(idx)
+        for i, p in enumerate(df[col_telp].astype(str).fillna("").map(normalize_phone).tolist()):
+            if p:
+                phone_index.setdefault(p, []).append(i)
 
     if col_nama in df.columns:
-        values = (
-            df[col_nama]
-            .astype(str)
+        for i, n in enumerate(
+            df[col_nama].astype(str)
             .fillna("")
             .map(lambda x: re.sub(r"\s+", " ", str(x).strip().lower()))
             .tolist()
-        )
-        for idx, key in enumerate(values):
-            if key:
-                name_index.setdefault(key, []).append(idx)
+        ):
+            if n:
+                name_index.setdefault(n, []).append(i)
 
     return resi_index, phone_index, name_index
 
-
-def _normalize_match_mode(match_mode: str) -> str:
-    mode = (match_mode or "").strip().lower()
-    if "auto" in mode:
-        return "auto"
-    if "resi" in mode:
-        return "resi"
-    if "telp" in mode or "phone" in mode:
-        return "telp"
-    return "nama"
-
-
 def match_pdf_candidates(
-    cand_resi: List[str],
-    cand_phone: List[str],
-    cand_name: List[str],
-    match_mode: str,
-    resi_index: Dict[str, List[int]],
-    phone_index: Dict[str, List[int]],
-    name_index: Dict[str, List[int]],
-    df: Optional[pd.DataFrame] = None,
-    col_telp: str = "",
-    col_nama: str = "",
+    cand_resi, cand_phone, cand_name, match_mode: str,
+    resi_index: dict, phone_index: dict, name_index: dict,
+    df: Optional[pd.DataFrame] = None, col_telp: str = "", col_nama: str = ""
 ):
-    def score_row(row_idx: int) -> int:
-        score = 0
+    def score_row(i: int) -> int:
+        s = 0
         if df is None:
-            return score
+            return s
+
         if col_telp and col_telp in df.columns and cand_phone:
-            row_phone = normalize_phone(str(df.iloc[row_idx].get(col_telp, "") or ""))
-            if row_phone and row_phone in cand_phone:
-                score += 100
+            row_ph = normalize_phone(str(df.iloc[i].get(col_telp, "") or ""))
+            if row_ph and row_ph in cand_phone:
+                s += 100
 
         if col_nama and col_nama in df.columns and cand_name:
-            row_name = re.sub(r"\s+", " ", str(df.iloc[row_idx].get(col_nama, "") or "").strip().lower())
-            for name in cand_name[:3]:
-                c_name = re.sub(r"\s+", " ", str(name).strip().lower())
-                if c_name and row_name and (c_name in row_name or row_name in c_name):
-                    score += 30
+            row_nm = re.sub(r"\s+", " ", str(df.iloc[i].get(col_nama, "") or "").strip().lower())
+            for nm in cand_name[:3]:
+                nm2 = re.sub(r"\s+", " ", str(nm).strip().lower())
+                if nm2 and row_nm and (nm2 in row_nm or row_nm in nm2):
+                    s += 30
                     break
-        return score
+        return s
 
-    def pick_best(indexes: List[int]) -> Optional[int]:
-        if not indexes:
+    def pick_best(idxs: List[int]) -> Optional[int]:
+        if not idxs:
             return None
-        if len(indexes) == 1:
-            return indexes[0]
-        scored = sorted(((score_row(i), i) for i in indexes), reverse=True)
+        if len(idxs) == 1:
+            return idxs[0]
+        scored = sorted(((score_row(i), i) for i in idxs), reverse=True)
         return scored[0][1]
 
     def by_resi():
-        for resi in cand_resi:
-            if resi in resi_index:
-                idx = pick_best(resi_index[resi])
-                return idx, f"RESI:{resi}"
+        for r in cand_resi:
+            if r in resi_index:
+                idx = pick_best(resi_index[r])
+                return idx, f"RESI:{r}"
         return None, None
 
     def by_phone():
-        for phone in cand_phone:
-            if phone in phone_index:
-                idx = pick_best(phone_index[phone])
-                return idx, f"TELP:{phone}"
+        for ph in cand_phone:
+            if ph in phone_index:
+                idx = pick_best(phone_index[ph])
+                return idx, f"TELP:{ph}"
         return None, None
 
     def by_name():
-        for name in cand_name:
-            key = re.sub(r"\s+", " ", str(name).strip().lower())
+        for nm in cand_name:
+            key = re.sub(r"\s+", " ", str(nm).strip().lower())
             if key in name_index and name_index[key]:
-                return name_index[key][0], f"NAMA:{name}"
+                return name_index[key][0], f"NAMA:{nm}"
         return None, None
 
-    mode = _normalize_match_mode(match_mode)
-    if mode == "auto":
+    if match_mode == "Auto (Resi → Telp → Nama)" or match_mode == "Auto (Resi -> Telp -> Nama)":
         idx, by = by_resi()
         if idx is not None:
             return idx, by
@@ -508,39 +506,41 @@ def match_pdf_candidates(
         if idx is not None:
             return idx, by
         return by_name()
-    if mode == "resi":
+
+    if match_mode == "Resi saja":
         return by_resi()
-    if mode == "telp":
+    if match_mode == "Telp saja":
         return by_phone()
     return by_name()
 
 
+# ================= PRODUCT PARSING =================
 def build_product_lines_from_row(row: pd.Series, max_items: int = 10) -> Dict[str, List[Tuple[str, str]]]:
-    merged: Dict[str, Dict[str, int]] = {"BOX": {}, "BARANG": {}, "HADIAH": {}}
+    merged = {"BOX": {}, "BARANG": {}, "HADIAH": {}}
 
-    for index in range(1, 11):
-        sku_val = ""
-        qty_val = ""
-        for col in row.index:
-            clean_col = re.sub(r"\s+", "", str(col).lower().strip())
-            if clean_col == f"produk{index}sku":
-                sku_val = str(row[col]).strip()
-            elif clean_col == f"produk{index}qty":
-                qty_val = str(row[col]).strip()
+    for i in range(1, 11):
+        sku_val, qty_val = "", ""
+        for c in row.index:
+            c_clean = re.sub(r"\s+", "", str(c).lower().strip())
+            if c_clean == f"produk{i}sku":
+                sku_val = str(row[c]).strip()
+            elif c_clean == f"produk{i}qty":
+                qty_val = str(row[c]).strip()
 
         if not sku_val or sku_val.lower() == "nan":
             continue
 
         qty = int(qty_val) if qty_val and qty_val.isdigit() else 1
         sku_upper = sku_val.upper()
-        category = "BARANG"
-        name = ""
+
+        cat, name = "BARANG", ""
 
         if ("CBHB" in sku_upper) or ("CBGM" in sku_upper) or ("BOX" in sku_upper) or ("KARDUS" in sku_upper):
-            category = "BOX"
+            cat = "BOX"
             name = format_consumable_box(sku_val)
+
         elif any(k in sku_upper for k in ["TASBIH", "GLAS", "SPTL", "SHKR", "HADIAH", "BONUS", "TOPLES", "FLYER", "PANDUAN", "CSO", "CRM"]):
-            category = "HADIAH"
+            cat = "HADIAH"
             if "TASBIH" in sku_upper:
                 name = "Hadiah Tasbih Digital"
             elif "GLAS" in sku_upper:
@@ -558,23 +558,26 @@ def build_product_lines_from_row(row: pd.Series, max_items: int = 10) -> Dict[st
             else:
                 name = "Hadiah/Bonus"
             name = f"{name} [{sku_val}]"
+
         else:
-            for key, alias in {
-                "GM": "GAMAMILK",
-                "EC": "ETACEFIT",
-                "GMP": "GAMAMILK PREMIUM",
-                "PB": "PHENOBODY",
-                "GN": "GNAIT",
-            }.items():
-                if key in sku_upper:
-                    category = "BARANG"
-                    name = f"{alias} [{sku_val}]"
+            barang_keys = ["GMP", "GM", "EC", "PB", "GN"]
+            for k in barang_keys:
+                if k in sku_upper:
+                    name = {
+                        "GM": "GAMAMILK",
+                        "EC": "ETACEFIT",
+                        "GMP": "GAMAMILK PREMIUM",
+                        "PB": "PHENOBODY",
+                        "GN": "GNAIT",
+                    }[k]
+                    cat = "BARANG"
+                    name = f"{name} [{sku_val}]"
                     break
 
         if not name:
-            name = sku_val
+            name = f"{sku_val}"
 
-        merged[category][name] = merged[category].get(name, 0) + qty
+        merged[cat][name] = merged[cat].get(name, 0) + qty
 
     return {
         "BOX": [(trunc(k, 200), f"{v} pcs") for k, v in merged["BOX"].items()][:max_items],
@@ -583,153 +586,284 @@ def build_product_lines_from_row(row: pd.Series, max_items: int = 10) -> Dict[st
     }
 
 
+# ================= MASTER RULES =================
+def _sig_from_row_products(row: pd.Series) -> str:
+    items = []
+    for i in range(1, 11):
+        sku_val, qty_val = "", ""
+        for c in row.index:
+            c_clean = re.sub(r"\s+", "", str(c).lower().strip())
+            if c_clean == f"produk{i}sku":
+                sku_val = str(row[c]).strip()
+            elif c_clean == f"produk{i}qty":
+                qty_val = str(row[c]).strip()
+
+        if not sku_val or sku_val.lower() == "nan":
+            continue
+        sku_upper = sku_val.upper()
+
+        if ("CBHB" in sku_upper) or ("CBGM" in sku_upper) or ("BOX" in sku_upper) or ("KARDUS" in sku_upper):
+            continue
+        if any(k in sku_upper for k in ["TASBIH","GLAS","SPTL","SHKR","HADIAH","BONUS","TOPLES","FLYER","PANDUAN","CSO","CRM"]):
+            continue
+
+        qty = int(qty_val) if qty_val and qty_val.isdigit() else 1
+        sku_canon = re.sub(r"[^A-Z0-9]", "", sku_upper)
+        items.append((sku_canon, qty))
+
+    items.sort(key=lambda x: (x[0], x[1]))
+    return "|".join([f"{s}x{q}" for s, q in items])
+
+def build_master_mapping(master_df: pd.DataFrame):
+    df = normalize_columns(master_df.copy())
+
+    col_sig = _find_col(df, ["sig", "signature", "rule", "key"])
+    col_box = _find_col(df, ["box", "cbgm", "cbhb", "msku"])
+    col_hadiah_sku = _find_col(df, ["hadiah sku", "bonus sku", "gift sku"])
+    col_hadiah_nama = _find_col(df, ["hadiah", "bonus", "gift", "nama hadiah", "hadiah nama"])
+    col_qty = _find_col(df, ["qty", "jumlah"])
+
+    if not col_sig:
+        raise ValueError("Master tidak punya kolom signature (sig/signature/rule/key).")
+
+    master_map = {}
+    stats = {"sig_lr": 0, "sig_rl": 0, "qty": 0, "box_msku": 0, "hadiah_nama": 0, "hadiah_sku": 0}
+
+    for _, r in df.iterrows():
+        sig = str(r.get(col_sig, "") or "").strip()
+        if not sig:
+            continue
+
+        box_raw = str(r.get(col_box, "") or "").strip() if col_box else ""
+        hadiah_nama = str(r.get(col_hadiah_nama, "") or "").strip() if col_hadiah_nama else ""
+        hadiah_sku = str(r.get(col_hadiah_sku, "") or "").strip() if col_hadiah_sku else ""
+        qty_raw = str(r.get(col_qty, "") or "").strip() if col_qty else ""
+
+        qty = 1
+        if qty_raw.isdigit():
+            qty = int(qty_raw)
+            stats["qty"] += 1
+
+        master_map[sig] = {"box_code": box_raw, "hadiah_nama": hadiah_nama, "hadiah_sku": hadiah_sku, "qty": qty}
+
+        if box_raw: stats["box_msku"] += 1
+        if hadiah_nama: stats["hadiah_nama"] += 1
+        if hadiah_sku: stats["hadiah_sku"] += 1
+
+    stats["sig_lr"] = sum(1 for k in master_map.keys() if "|" in k)
+    return master_map, stats
+
+def build_product_lines_with_master(row: pd.Series, master_map: dict, max_items: int = 10) -> Dict[str, List[Tuple[str, str]]]:
+    base = build_product_lines_from_row(row, max_items=max_items)
+    sig = _sig_from_row_products(row)
+
+    rule = master_map.get(sig)
+    if not rule:
+        return base
+
+    qty_rule = int(rule.get("qty") or 1)
+
+    box_code = (rule.get("box_code") or "").strip()
+    if box_code:
+        box_name = format_consumable_box(box_code)
+        base["BOX"] = [(trunc(box_name, 200), f"{qty_rule} pcs")] + base["BOX"]
+        base["BOX"] = base["BOX"][:max_items]
+
+    hadiah_nama = (rule.get("hadiah_nama") or "").strip()
+    hadiah_sku = (rule.get("hadiah_sku") or "").strip()
+    if hadiah_nama or hadiah_sku:
+        label = hadiah_nama if hadiah_nama else "Hadiah/Bonus"
+        if hadiah_sku:
+            label = f"{label} [{hadiah_sku}]"
+        base["HADIAH"] = [(trunc(label, 260), f"{qty_rule} pcs")] + base["HADIAH"]
+        base["HADIAH"] = base["HADIAH"][:max_items]
+
+    return base
+
+
+# ================= A6 EXPORT =================
 def _fit_image_contain(img_w: float, img_h: float, box_w: float, box_h: float):
+    """Contain (no crop)."""
     img_ar = img_w / (img_h or 1)
     box_ar = box_w / (box_h or 1)
     return (box_w, box_w / img_ar) if img_ar > box_ar else (box_h * img_ar, box_h)
 
+def _fit_image_cover(img_w: float, img_h: float, box_w: float, box_h: float):
+    """Cover (bisa crop tipis)."""
+    img_ar = img_w / (img_h or 1)
+    box_ar = box_w / (box_h or 1)
+    return (box_h * img_ar, box_h) if img_ar > box_ar else (box_w, box_w / img_ar)
 
 def export_pdf_a6_style_produk(pages: List[dict], scale_logo_bytes: Optional[bytes] = None) -> bytes:
-    buffer = io.BytesIO()
-    page_w = A6_W_MM * mm
-    page_h = A6_H_MM * mm
-    pdf_canvas = canvas.Canvas(buffer, pagesize=(page_w, page_h))
-    margin = MARGIN_MM * mm
-    bottom_panel_h = BOTTOM_PANEL_MM * mm
+    buf = io.BytesIO()
+    page_w, page_h = A6_W_MM * mm, A6_H_MM * mm
+    c = canvas.Canvas(buf, pagesize=(page_w, page_h))
+    margin, bottom_panel_h = MARGIN_MM * mm, BOTTOM_PANEL_MM * mm
 
-    for page_idx, page_data in enumerate(pages):
-        if page_idx > 0:
-            pdf_canvas.showPage()
-            pdf_canvas.setPageSize((page_w, page_h))
+    for i, p in enumerate(pages):
+        if i > 0:
+            c.showPage()
+            c.setPageSize((page_w, page_h))
 
+        # --- BORDER KOTAK (Frame Garis Luar) ---
         border_gap = 1.5 * mm
-        pdf_canvas.setStrokeColorRGB(0, 0, 0)
-        pdf_canvas.setLineWidth(1.0)
-        pdf_canvas.rect(border_gap, border_gap, page_w - 2 * border_gap, page_h - 2 * border_gap)
+        c.setStrokeColorRGB(0, 0, 0)
+        c.setLineWidth(1.0)
+        c.rect(border_gap, border_gap, page_w - 2 * border_gap, page_h - 2 * border_gap)
 
-        resi_area_x = margin
-        resi_area_y = margin + bottom_panel_h
-        resi_area_w = page_w - (2 * margin)
-        resi_area_h = page_h - (2 * margin + bottom_panel_h)
+        resi_area_x, resi_area_y = margin, margin + bottom_panel_h
+        resi_area_w, resi_area_h = page_w - 2 * margin, page_h - (2 * margin + bottom_panel_h)
 
         if scale_logo_bytes:
             try:
-                logo = Image.open(io.BytesIO(scale_logo_bytes)).convert("RGBA")
-                pdf_canvas.drawImage(ImageReader(logo), margin, page_h - margin - (8 * mm), width=(16 * mm), height=(8 * mm), mask="auto")
+                logo_w, logo_h = SCALE_LOGO_W_MM * mm, SCALE_LOGO_H_MM * mm
+                c.drawImage(
+                    ImageReader(Image.open(io.BytesIO(scale_logo_bytes)).convert("RGBA")),
+                    margin, page_h - margin - logo_h,
+                    width=logo_w, height=logo_h,
+                    mask="auto",
+                )
             except Exception:
                 pass
 
-        raw_img = Image.open(io.BytesIO(page_data["png_bytes"])).convert("L")
+        # Binarize (threshold) gambar resi untuk printer thermal khusus
+        # Supaya warna abu-abu (dari anti-aliasing) jadi hitam pekat,
+        # mencegah hasil cetak buram/berbintik.
+        raw_img = Image.open(io.BytesIO(p["png_bytes"])).convert("L")
         resi_img = raw_img.point(lambda x: 0 if x < 200 else 255).convert("RGB")
         img_w, img_h = resi_img.size
-        draw_w, draw_h = _fit_image_contain(img_w, img_h, resi_area_w, resi_area_h)
-        draw_x = resi_area_x + (resi_area_w - draw_w) / 2
-        draw_y = resi_area_y + (resi_area_h - draw_h)
-        pdf_canvas.drawImage(ImageReader(resi_img), draw_x, draw_y, width=draw_w, height=draw_h)
+
+        if RESI_FIT_MODE.lower() == "cover":
+            draw_w, draw_h = _fit_image_cover(img_w, img_h, resi_area_w, resi_area_h)
+        else:
+            draw_w, draw_h = _fit_image_contain(img_w, img_h, resi_area_w, resi_area_h)
+
+        x = resi_area_x + (resi_area_w - draw_w) / 2
+        y = resi_area_y + (resi_area_h - draw_h)
+        c.drawImage(ImageReader(resi_img), x, y, width=draw_w, height=draw_h)
 
         panel_x = margin
         panel_w = page_w - 2 * margin
         panel_top_y = margin + bottom_panel_h - 2 * mm
 
+        # --- [UPDATE] BANNER PERINGATAN (Footer Hitam) ---
+        # Uppercase dan Bold sesuai request
+        banner_text = "MOHON JANGAN DITERIMA JIKA PAKET RUSAK"
         banner_h = WARNING_BANNER_H_MM * mm
-        banner_y = margin
-        pdf_canvas.setFillColorRGB(0, 0, 0)
-        pdf_canvas.rect(panel_x, banner_y, panel_w, banner_h, fill=1, stroke=0)
-        pdf_canvas.setFillColorRGB(1, 1, 1)
-        pdf_canvas.setFont("Helvetica-Bold", 9)
-        pdf_canvas.drawCentredString(panel_x + (panel_w / 2), banner_y + 1.8 * mm, "MOHON JANGAN DITERIMA JIKA PAKET RUSAK")
+        banner_y = margin # Tepat di atas margin bawah
 
+        # Gambar kotak hitam full panel
+        c.setFillColorRGB(0, 0, 0)
+        c.rect(panel_x, banner_y, panel_w, banner_h, fill=1, stroke=0)
+
+        # Gambar teks putih bold di tengah
+        c.setFillColorRGB(1, 1, 1) # Putih
+        c.setFont("Helvetica-Bold", 9) # Font Bold & Ukuran pas
+        
+        # Center text positioning
+        text_x = panel_x + (panel_w / 2)
+        text_y = banner_y + 1.8 * mm # Adjust vertikal supaya pas tengah kotak 6mm
+        c.drawCentredString(text_x, text_y, banner_text)
+
+        # Set batas bawah list produk agar tidak menimpa banner (+ space dikit)
         panel_bottom_y = margin + banner_h + 4.0 * mm
-        grouped = page_data.get("produk") or {"BOX": [], "BARANG": [], "HADIAH": []}
-        rows: List[Tuple[str, str]] = []
-        for category in ["BOX", "BARANG", "HADIAH"]:
-            for name, qty in grouped.get(category, []):
-                rows.append((name, qty))
+        # -------------------------------------------------
 
-        pdf_canvas.setFillColorRGB(0, 0, 0)
-        pdf_canvas.setFont("Helvetica-Bold", 8)
-        pdf_canvas.drawString(panel_x, panel_top_y, "Produk")
-        pdf_canvas.drawRightString(panel_x + panel_w, panel_top_y, "Jumlah")
-        pdf_canvas.setStrokeColorRGB(0.75, 0.75, 0.75)
-        pdf_canvas.setLineWidth(0.6)
-        pdf_canvas.line(panel_x, panel_top_y - 2.2 * mm, panel_x + panel_w, panel_top_y - 2.2 * mm)
+        grouped = p.get("produk") or {"BOX": [], "BARANG": [], "HADIAH": []}
+        rows = []
+        for cat in ["BOX", "BARANG", "HADIAH"]:
+            for nm, qt in grouped.get(cat, []):
+                rows.append((nm, qt))
 
-        y_cursor = panel_top_y - 6 * mm
+        c.setFillColorRGB(0, 0, 0)
+        c.setFont("Helvetica-Bold", 8)
+        c.drawString(panel_x, panel_top_y, "Produk")
+        c.drawRightString(panel_x + panel_w, panel_top_y, "Jumlah")
+
+        c.setStrokeColorRGB(0.75, 0.75, 0.75)
+        c.setLineWidth(0.6)
+        c.line(panel_x, panel_top_y - 2.2 * mm, panel_x + panel_w, panel_top_y - 2.2 * mm)
+
+        y2 = panel_top_y - 6 * mm
         line_h = LINE_HEIGHT_MM * mm
-        max_lines = max(1, int((y_cursor - panel_bottom_y) / line_h) + 1)
+        max_lines = max(1, int((y2 - panel_bottom_y) / line_h) + 1)
 
         font_name = "Helvetica"
         font_size = 7.0
-        pdf_canvas.setFont(font_name, font_size)
+        c.setFont(font_name, font_size)
+
         qty_right_x = panel_x + panel_w - (QTY_RIGHT_PAD_MM * mm)
         qty_col_w = QTY_COL_W_MM * mm
         gap_w = NAME_GAP_MM * mm
         name_max_w = panel_w - qty_col_w - gap_w
 
         used_lines = 0
-        for name, qty in rows:
+        for (nm, qt) in rows:
             if used_lines >= max_lines:
                 break
-            wrapped_lines = wrap_text_to_width(pdf_canvas, str(name), name_max_w, font_name, font_size)
-            for idx, line in enumerate(wrapped_lines):
+
+            wrapped = wrap_text_to_width(c, str(nm), name_max_w, font_name, font_size)
+
+            for li, line in enumerate(wrapped):
                 if used_lines >= max_lines:
                     break
-                pdf_canvas.drawString(panel_x, y_cursor, line)
-                if idx == 0:
-                    pdf_canvas.drawRightString(qty_right_x, y_cursor, str(qty))
-                y_cursor -= line_h
+
+                c.drawString(panel_x, y2, line)
+                if li == 0:
+                    c.drawRightString(qty_right_x, y2, str(qt))
+
+                y2 -= line_h
                 used_lines += 1
 
         import datetime
-
         jakarta_tz = datetime.timezone(datetime.timedelta(hours=7))
-        timestamp_text = datetime.datetime.now(jakarta_tz).strftime("%d-%m-%Y %H:%M:%S")
-        pdf_canvas.setFillColorRGB(0.5, 0.5, 0.5)
-        pdf_canvas.setFont("Helvetica", 5)
-        pdf_canvas.drawString(panel_x, margin + banner_h + 1.2 * mm, f"Dicetak: {timestamp_text}")
-
-        resi_text = page_data.get("resi", "")
+        ts_text = "Dicetak: " + datetime.datetime.now(jakarta_tz).strftime("%d-%m-%Y %H:%M:%S")
+        resi_text = p.get("resi", "")
         if resi_text:
-            pdf_canvas.drawRightString(panel_x + panel_w, margin + banner_h + 1.2 * mm, f"No. Resi: {resi_text}")
+            resi_text = "No. Resi: " + resi_text
+            
+        c.setFillColorRGB(0.5, 0.5, 0.5)
+        c.setFont("Helvetica", 5)
+        c.drawString(panel_x, margin + banner_h + 1.2 * mm, ts_text)
+        if resi_text:
+            c.drawRightString(panel_x + panel_w, margin + banner_h + 1.2 * mm, resi_text)
 
-    pdf_canvas.save()
-    return buffer.getvalue()
+    c.save()
+    return buf.getvalue()
 
 
+# ================= MATCH PDFs =================
 def match_pdfs(
     df: pd.DataFrame,
-    pdf_file_items: List[Tuple[str, bytes]],
+    pdf_file_items: List[Tuple[str, bytes]],  # (filename, bytes)
     col_resi: str,
     col_nama: str,
     col_telp: str,
     match_mode: str,
     max_pages: int,
-    resi_index: Dict[str, List[int]],
-    phone_index: Dict[str, List[int]],
-    name_index: Dict[str, List[int]],
+    resi_index: dict,
+    phone_index: dict,
+    name_index: dict,
     debug_collect: bool = False,
-    debug_limit: int = 20,
+    debug_limit: int = 20
 ):
-    docs: Dict[str, Optional[fitz.Document]] = {}
-    results: List[Dict[str, object]] = []
-    matched_items: List[Dict[str, object]] = []
-    debug_rows: List[Dict[str, object]] = []
-    page_total = 0
-    found_order = 0
+    docs, results, matched_items, debug_rows = {}, [], [], []
+    page_total, found_order = 0, 0
 
-    for filename, pdf_bytes in pdf_file_items:
+    for fname, b in pdf_file_items:
         try:
-            docs[filename] = fitz.open(stream=pdf_bytes, filetype="pdf")
-        except Exception as exc:
-            docs[filename] = None
-            results.append({"pdf_file": filename, "page": "", "status": "ERROR_OPEN", "note": str(exc)})
+            docs[fname] = fitz.open(stream=b, filetype="pdf")
+        except Exception as e:
+            results.append({"pdf_file": fname, "page": "", "status": "ERROR_OPEN", "note": str(e)})
 
-    for filename, doc in docs.items():
+    for fname, doc in docs.items():
         if not doc:
             continue
-        for page0 in range(min(len(doc), int(max_pages))):
+
+        for p0 in range(min(len(doc), int(max_pages))):
             page_total += 1
-            text = extract_page_text_strong(doc.load_page(page0))
+            text = extract_page_text_strong(doc.load_page(p0))
+
             cand_resi = extract_resi_candidates(text)
             cand_phone = extract_phone_candidates(text)
             cand_name = extract_name_candidates(text)
@@ -748,51 +882,42 @@ def match_pdfs(
             )
 
             if debug_collect and len(debug_rows) < debug_limit:
-                debug_rows.append(
-                    {
-                        "pdf_file": filename,
-                        "page": page0 + 1,
-                        "text_len": len(text),
-                        "resi_candidates": ", ".join(cand_resi[:8]),
-                        "telp_candidates": ", ".join(cand_phone[:6]),
-                        "nama_candidates": ", ".join(cand_name[:4]),
-                        "status": "MATCHED" if idx is not None else "NOT_MATCHED",
-                        "by": by or "",
-                    }
-                )
+                debug_rows.append({
+                    "pdf_file": fname,
+                    "page": p0 + 1,
+                    "text_len": len(text),
+                    "resi_candidates": ", ".join(cand_resi[:8]),
+                    "telp_candidates": ", ".join(cand_phone[:6]),
+                    "nama_candidates": ", ".join(cand_name[:4]),
+                    "status": "MATCHED" if idx is not None else "NOT_MATCHED",
+                    "by": by or ""
+                })
 
             if idx is None:
-                results.append({"pdf_file": filename, "page": page0 + 1, "status": "NOT_MATCHED", "note": ""})
+                results.append({"pdf_file": fname, "page": p0 + 1, "status": "NOT_MATCHED", "note": ""})
                 continue
 
             found_order += 1
-            matched_resi = normalize_resi(df.iloc[int(idx)].get(col_resi, "") or "")
-            matched_items.append(
-                {
-                    "pdf_file": filename,
-                    "page0": page0,
-                    "matched_idx": int(idx),
-                    "matched_by": by or "",
-                    "resi": matched_resi,
-                    "found_order": found_order,
-                }
-            )
-            results.append(
-                {
-                    "pdf_file": filename,
-                    "page": page0 + 1,
-                    "status": "MATCHED",
-                    "note": by or "",
-                    "resi": matched_resi,
-                }
-            )
+            m_resi = normalize_resi(df.iloc[int(idx)].get(col_resi, "") or "")
+            matched_items.append({
+                "pdf_file": fname,
+                "page0": p0,
+                "matched_idx": int(idx),
+                "matched_by": by or "",
+                "resi": m_resi,
+                "found_order": found_order
+            })
+            results.append({"pdf_file": fname, "page": p0 + 1, "status": "MATCHED", "note": by or "", "resi": m_resi})
 
-    for doc in docs.values():
+    for d in docs.values():
         try:
-            if doc:
-                doc.close()
+            d.close()
         except Exception:
             pass
 
-    debug_df = pd.DataFrame(debug_rows) if debug_rows else None
-    return pd.DataFrame(results), debug_df, matched_items, page_total
+    return (
+        pd.DataFrame(results),
+        pd.DataFrame(debug_rows) if debug_rows else None,
+        matched_items,
+        page_total
+    )
