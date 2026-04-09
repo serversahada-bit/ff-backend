@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preview Label</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .sheet-label {
+      width: 10cm;
+      height: 15cm;
+      background: #fff;
+      margin: 14px auto;
+      padding: 10px;
+      border: 1px solid #000;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      line-height: 1.3;
+      color: #000;
+    }
+
+    .resi-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #000;
+      margin-top: 4px;
+    }
+
+    .resi-table th,
+    .resi-table td {
+      border: 1px solid #000;
+      padding: 4px;
+      vertical-align: top;
+    }
+
+    .resi-table th {
+      background: #f3f4f6;
+      font-size: 9px;
+      text-align: left;
+    }
+
+    @media print {
+      @page {
+        size: 100mm 150mm;
+        margin: 0;
+      }
+      body {
+        background: #fff;
+        margin: 0;
+        padding: 0;
+      }
+      .preview-info {
+        display: none;
+      }
+      .sheet-label {
+        margin: 0;
+        width: 100mm;
+        height: 150mm;
+        border: none;
+        page-break-after: always;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 p-4 text-slate-900">
+  <div class="preview-info mx-auto mb-3 max-w-2xl rounded-xl border border-slate-200 bg-white px-4 py-2 text-center text-xs font-semibold text-slate-600 shadow-sm">
+    Dicetak pada: {{ ts }} | Total Label: {{ labels|length }}
+  </div>
+
+  {% for l in labels %}
+    <div class="sheet-label">
+      <div class="mb-1 flex items-center justify-between border-b-2 border-black pb-1">
+        <div class="flex items-center gap-2">
+          <img class="h-[34px] w-auto object-contain" src="{{ url_for('static', filename='img/logo.png') }}" alt="logo">
+          <div class="border border-black px-1.5 py-0.5 text-[9px]">Herbiyon</div>
+        </div>
+        <div class="h-[32px] w-[78px] overflow-hidden">
+          {% if l.courier_logo %}
+            <img class="h-full w-full object-contain" src="{{ url_for('static', filename='img/' ~ l.courier_logo) }}" alt="kurir">
+          {% elif l.courier %}
+            <span class="text-[9px] font-bold">{{ l.courier }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mb-1 flex gap-1.5">
+        <div class="min-w-0 flex-1">
+          <div class="mb-0.5 font-mono text-[13px] font-bold tracking-wide">{{ l.code_full }}</div>
+          <img class="h-[50px] w-full object-fill" src="data:image/png;base64,{{ l.barcode_b64 }}" alt="barcode">
+        </div>
+        <img class="h-[68px] w-[68px] border border-slate-300" src="data:image/png;base64,{{ l.qr_b64 }}" alt="qr">
+      </div>
+
+      <table class="resi-table">
+        <thead>
+          <tr>
+            <th>FROM</th>
+            <th>TO</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="mb-0.5 text-[11px] font-extrabold uppercase">{{ l.sender_name }}</div>
+              <div class="mb-0.5 font-mono text-[10px]">{{ l.sender_phone }}</div>
+              {% for s in l.sender_address_lines %}
+                <div>{{ s }}</div>
+              {% endfor %}
+            </td>
+            <td>
+              <div class="mb-0.5 text-[11px] font-extrabold uppercase">{{ l.receiver_name }}</div>
+              <div class="mb-0.5 font-mono text-[10px]">{{ l.receiver_phone }}</div>
+              {% for r in l.receiver_address_lines %}
+                <div>{{ r }}</div>
+              {% endfor %}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="mt-1 flex items-center justify-between border-2 border-black px-1.5 py-1 text-[13px] font-extrabold">
+        <span>ONGKIR</span>
+        <span>{{ l.cod }}</span>
+      </div>
+
+      <div class="mt-1 min-h-[36px] border border-black px-1.5 py-1 text-[10px]">
+        <strong>Notes / Isi Paket:</strong><br>
+        {{ l.comments }}
+      </div>
+
+      <div class="mt-1 bg-black px-1 py-1.5 text-center text-[13px] font-black uppercase tracking-wide text-white">
+        Wajib Video Proses Unboxing
+      </div>
+
+      {% if l.products and l.products|length > 0 %}
+        <div class="mt-1 border border-black px-1.5 py-1 text-[10px]">
+          <div class="mb-0.5 text-center text-[10px] font-bold">Produk &amp; Jumlah</div>
+          {% for p in l.products %}
+            <div class="flex items-start justify-between gap-2">
+              <span>{{ p.name }}</span>
+              <span>{{ p.qty }} pcs</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
+</body>
+</html>

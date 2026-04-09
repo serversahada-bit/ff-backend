@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}PTSLU Dashboard{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Manrope", "ui-sans-serif", "system-ui", "sans-serif"],
+          },
+          colors: {
+            brand: {
+              50: "#ecfeff",
+              100: "#cffafe",
+              200: "#a5f3fc",
+              300: "#67e8f9",
+              400: "#22d3ee",
+              500: "#06b6d4",
+              600: "#0891b2",
+              700: "#0e7490",
+              800: "#155e75",
+              900: "#164e63",
+            },
+          },
+          boxShadow: {
+            soft: "0 20px 45px -22px rgba(15, 23, 42, 0.45)",
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="font-sans bg-slate-100 text-slate-900 antialiased">
+  <div class="min-h-screen bg-[radial-gradient(circle_at_top_left,_#d1fae5_0,_transparent_36%),radial-gradient(circle_at_bottom_right,_#bfdbfe_0,_transparent_30%)]">
+    <div class="min-h-screen lg:flex">
+      <aside
+        id="sidebar"
+        class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full transform border-r border-slate-200 bg-white/95 backdrop-blur transition duration-200 lg:static lg:translate-x-0"
+      >
+        <div class="flex h-full flex-col">
+          <div class="border-b border-slate-200 p-5">
+            <div class="flex items-center gap-3">
+              <div class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-sm font-extrabold text-white">PT</div>
+              <div>
+                <p class="text-sm font-extrabold tracking-tight text-slate-900">PTSLU Tools</p>
+                <p class="text-xs text-slate-500">Tailwind Dashboard</p>
+              </div>
+            </div>
+          </div>
+
+          <nav class="space-y-1 p-4">
+            {% for item in sidebar_items %}
+              <a
+                href="{{ url_for(item.endpoint) }}"
+                class="group flex items-center justify-between rounded-xl border px-3 py-2 text-sm font-semibold transition {% if active_page == item.key %}border-brand-200 bg-brand-50 text-brand-800{% else %}border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900{% endif %}"
+              >
+                <span>{{ item.label }}</span>
+                {% if active_page == item.key %}
+                  <span class="h-2 w-2 rounded-full bg-brand-500"></span>
+                {% endif %}
+              </a>
+            {% endfor %}
+          </nav>
+
+          <div class="mt-auto border-t border-slate-200 p-4">
+            <p class="text-xs leading-relaxed text-slate-500">
+              Dashboard gabungan untuk Label Generator, Resi Matcher, dan pengaturan API.
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      <div
+        id="sidebarOverlay"
+        class="fixed inset-0 z-30 hidden bg-slate-900/45 backdrop-blur-sm lg:hidden"
+      ></div>
+
+      <div class="min-w-0 flex-1">
+        <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+          <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+            <div>
+              <p class="text-sm font-bold text-slate-900">Operasional Dashboard</p>
+              <p class="text-xs text-slate-500">Modern responsive layout with Tailwind CSS</p>
+            </div>
+            <button
+              id="sidebarToggle"
+              type="button"
+              class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 lg:hidden"
+            >
+              Menu
+            </button>
+          </div>
+        </header>
+
+        <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <section class="mb-5 space-y-2">
+                {% for category, msg in messages %}
+                  {% if category in ["success", "ok"] %}
+                    {% set box_class = "border-emerald-200 bg-emerald-50 text-emerald-800" %}
+                  {% elif category in ["danger", "error"] %}
+                    {% set box_class = "border-rose-200 bg-rose-50 text-rose-800" %}
+                  {% elif category in ["warning"] %}
+                    {% set box_class = "border-amber-200 bg-amber-50 text-amber-800" %}
+                  {% else %}
+                    {% set box_class = "border-slate-200 bg-white text-slate-700" %}
+                  {% endif %}
+                  <div class="rounded-xl border px-4 py-3 text-sm font-semibold shadow-soft {{ box_class }}">
+                    {{ msg }}
+                  </div>
+                {% endfor %}
+              </section>
+            {% endif %}
+          {% endwith %}
+
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebarOverlay");
+      const toggle = document.getElementById("sidebarToggle");
+      if (!sidebar || !overlay || !toggle) return;
+
+      function openSidebar() {
+        sidebar.classList.remove("-translate-x-full");
+        overlay.classList.remove("hidden");
+      }
+
+      function closeSidebar() {
+        sidebar.classList.add("-translate-x-full");
+        overlay.classList.add("hidden");
+      }
+
+      toggle.addEventListener("click", function () {
+        if (sidebar.classList.contains("-translate-x-full")) {
+          openSidebar();
+        } else {
+          closeSidebar();
+        }
+      });
+
+      overlay.addEventListener("click", closeSidebar);
+
+      window.addEventListener("resize", function () {
+        if (window.innerWidth >= 1024) {
+          overlay.classList.add("hidden");
+          sidebar.classList.remove("-translate-x-full");
+        } else if (!overlay.classList.contains("hidden")) {
+          sidebar.classList.remove("-translate-x-full");
+        } else {
+          sidebar.classList.add("-translate-x-full");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
