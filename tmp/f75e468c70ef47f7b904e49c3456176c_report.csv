@@ -1,5 +1,5 @@
 pdf_file,page,status,note,resi
 resi JNT try winning.pdf,1,MATCHED,RESI:1355164401,1355164401
-resi JNT try winning2.pdf,1,DUPLICATE,Already matched RESI:1355164401,
+resi JNT try winning2.pdf,1,NOT_MATCHED,Duplicate. Already matched RESI:1355164401,
 resi JNE try winning.pdf,1,MATCHED,RESI:CSS0701115567370,CSS0701115567370
 resi ninja try winning.pdf,1,MATCHED,RESI:NVIDSHADA000225685,NVIDSHADA000225685

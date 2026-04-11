@@ -849,6 +849,7 @@ def match_pdfs(
 ):
     docs, results, matched_items, debug_rows = {}, [], [], []
     page_total, found_order = 0, 0
+    seen_idxs = set()
 
     for fname, b in pdf_file_items:
         try:
@@ -896,6 +897,12 @@ def match_pdfs(
             if idx is None:
                 results.append({"pdf_file": fname, "page": p0 + 1, "status": "NOT_MATCHED", "note": ""})
                 continue
+
+            if idx in seen_idxs:
+                results.append({"pdf_file": fname, "page": p0 + 1, "status": "NOT_MATCHED", "note": f"Duplicate. Already matched {by}"})
+                continue
+
+            seen_idxs.add(idx)
 
             found_order += 1
             m_resi = normalize_resi(df.iloc[int(idx)].get(col_resi, "") or "")
