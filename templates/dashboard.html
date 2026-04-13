@@ -4,83 +4,116 @@
 
 {% block content %}
 <section class="mb-6">
-  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft sm:p-6">
+  <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Control Center</p>
+        <p class="text-xs font-bold uppercase tracking-wider text-blue-700">Control Center</p>
         <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Dashboard Operasional</h1>
-        <p class="mt-2 max-w-2xl text-sm text-slate-600">
-          Semua tool utama sekarang dalam satu aplikasi modern: Label Generator, Resi Matcher A6, dan API Integration Settings.
+        <p class="mt-2 max-w-2xl text-sm text-slate-600 font-medium">
+          Semua tool utama sekarang dalam satu aplikasi modern: Data AWB, Label Generator, Resi Matcher A6, dan API Integration Settings.
         </p>
       </div>
-      <span class="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
+      <span class="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
         Sidebar Aktif
       </span>
     </div>
   </div>
 </section>
 
-<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-  <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
+  <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Modul</p>
-    <p class="mt-2 text-3xl font-extrabold text-slate-900">3</p>
-    <p class="mt-1 text-xs text-slate-500">UI Dashboard + 2 engine utama + API setting</p>
+    <p class="mt-2 text-3xl font-extrabold text-slate-900">4</p>
+    <p class="mt-1 text-xs text-slate-500 font-medium">Scraper AWB + 2 engine + API</p>
   </article>
-  <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+  <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Framework</p>
     <p class="mt-2 text-2xl font-extrabold text-slate-900">Flask</p>
-    <p class="mt-1 text-xs text-slate-500">Backend Python untuk web dan API</p>
+    <p class="mt-1 text-xs text-slate-500 font-medium">Backend Python</p>
   </article>
-  <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+  <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">UI Stack</p>
-    <p class="mt-2 text-2xl font-extrabold text-slate-900">Tailwind CSS</p>
-    <p class="mt-1 text-xs text-slate-500">Responsive desktop dan mobile</p>
+    <p class="mt-2 text-2xl font-extrabold text-slate-900">Tailwind</p>
+    <p class="mt-1 text-xs text-slate-500 font-medium">Responsive desktop/mobile</p>
   </article>
-  <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+  <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Integrasi</p>
     <p class="mt-2 text-2xl font-extrabold text-slate-900">API Key</p>
-    <p class="mt-1 text-xs text-slate-500">Akses aman ke web eksternal</p>
+    <p class="mt-1 text-xs text-slate-500 font-medium">Akses eksternal & scraper</p>
   </article>
 </section>
 
-<section class="mt-6 grid gap-4 lg:grid-cols-3">
-  <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
-    <h2 class="text-lg font-extrabold text-slate-900">Label Generator</h2>
-    <p class="mt-2 text-sm leading-relaxed text-slate-600">
-      Upload Excel atau pakai Google Sheet untuk menghasilkan label thermal 100x150 dengan preview dan print cepat.
-    </p>
-    <a
-      href="{{ url_for('label_page') }}"
-      class="mt-4 inline-flex items-center rounded-xl bg-gradient-to-r from-brand-700 to-brand-600 px-4 py-2 text-sm font-bold text-white shadow-soft hover:brightness-110"
-    >
-      Buka Label Generator
-    </a>
+<section class="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+  <!-- Data AWB -->
+  <article class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col transition hover:shadow-md">
+    <div class="p-6 flex-1">
+      <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 mb-4 border border-blue-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+      </div>
+      <h2 class="text-lg font-bold text-slate-900 tracking-tight">Data AWB</h2>
+      <p class="mt-2 text-sm text-slate-500 font-medium leading-relaxed">
+        Upload AWB secara lokal dengan dukungan robot Playwright tersembunyi.
+      </p>
+    </div>
+    <div class="p-4 border-t border-slate-100 bg-slate-50 mt-auto">
+      <a href="{{ url_for('awb_page') }}" class="flex justify-center items-center w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm">
+        Buka Upload AWB
+      </a>
+    </div>
   </article>
 
-  <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
-    <h2 class="text-lg font-extrabold text-slate-900">Resi Matcher A6</h2>
-    <p class="mt-2 text-sm leading-relaxed text-slate-600">
-      Cocokkan data order dan PDF resi, lalu otomatis bikin output PDF A6 dan report hasil matching.
-    </p>
-    <a
-      href="{{ url_for('resi_page') }}"
-      class="mt-4 inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-soft hover:bg-slate-800"
-    >
-      Buka Resi Matcher
-    </a>
+  <!-- Label Generator -->
+  <article class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col transition hover:shadow-md">
+    <div class="p-6 flex-1">
+      <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600 mb-4 border border-emerald-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+      </div>
+      <h2 class="text-lg font-bold text-slate-900 tracking-tight">Label Generator</h2>
+      <p class="mt-2 text-sm text-slate-500 font-medium leading-relaxed">
+        Upload Excel atau Google Sheet untuk label thermal 100x150 dengan preview interaktif.
+      </p>
+    </div>
+    <div class="p-4 border-t border-slate-100 bg-slate-50 mt-auto">
+      <a href="{{ url_for('label_page') }}" class="flex justify-center items-center w-full px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition shadow-sm">
+        Buka Label Generator
+      </a>
+    </div>
   </article>
 
-  <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
-    <h2 class="text-lg font-extrabold text-slate-900">Pengaturan API Key</h2>
-    <p class="mt-2 text-sm leading-relaxed text-slate-600">
-      Atur API key dan origin whitelist supaya dua modul utama bisa dipanggil aman dari aplikasi lain.
-    </p>
-    <a
-      href="{{ url_for('api_settings_page') }}"
-      class="mt-4 inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
-    >
-      Buka Pengaturan API
-    </a>
+  <!-- Resi Matcher A6 -->
+  <article class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col transition hover:shadow-md">
+    <div class="p-6 flex-1">
+      <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 mb-4 border border-indigo-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+      </div>
+      <h2 class="text-lg font-bold text-slate-900 tracking-tight">Resi Matcher A6</h2>
+      <p class="mt-2 text-sm text-slate-500 font-medium leading-relaxed">
+        Cocokkan data order dengan PDF resi marketplace, lalu buat PDF ukuran A6.
+      </p>
+    </div>
+    <div class="p-4 border-t border-slate-100 bg-slate-50 mt-auto">
+      <a href="{{ url_for('resi_page') }}" class="flex justify-center items-center w-full px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 transition shadow-sm">
+        Buka Resi Matcher
+      </a>
+    </div>
+  </article>
+
+  <!-- API Settings -->
+  <article class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col transition hover:shadow-md">
+    <div class="p-6 flex-1">
+      <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 mb-4 border border-slate-200">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+      </div>
+      <h2 class="text-lg font-bold text-slate-900 tracking-tight">Pengaturan API Key</h2>
+      <p class="mt-2 text-sm text-slate-500 font-medium leading-relaxed">
+        Atur API key dan whitelist URL untuk melindungi endpoint dari akses tidak sah.
+      </p>
+    </div>
+    <div class="p-4 border-t border-slate-100 bg-slate-50 mt-auto">
+      <a href="{{ url_for('api_settings_page') }}" class="flex justify-center items-center w-full px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition shadow-sm">
+        Buka Pengaturan API
+      </a>
+    </div>
   </article>
 </section>
 {% endblock %}

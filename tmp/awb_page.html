@@ -1,0 +1,3453 @@
+<!DOCTYPE html><html lang="id" data-theme="wms-light" class="light"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <meta name="csrf-token" content="poXUzNGlGQbNiyegabUhxVMMFOtEMk0Q6KUmh3Ft">
+    <title>Upload AWB - WMS - Application</title>
+
+    <link rel="shortcut icon" href="https://winninghousefulfillment.com/favicons/favicon.ico">
+    <link rel="apple-touch-icon" sizes="57x57" href="https://winninghousefulfillment.com/favicons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="https://winninghousefulfillment.com/favicons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="https://winninghousefulfillment.com/favicons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="https://winninghousefulfillment.com/favicons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="https://winninghousefulfillment.com/favicons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="https://winninghousefulfillment.com/favicons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="https://winninghousefulfillment.com/favicons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://winninghousefulfillment.com/favicons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://winninghousefulfillment.com/favicons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://winninghousefulfillment.com/favicons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="https://winninghousefulfillment.com/favicons/android-icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://winninghousefulfillment.com/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="https://winninghousefulfillment.com/favicons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://winninghousefulfillment.com/favicons/favicon-16x16.png">
+    <link rel="manifest" href="https://winninghousefulfillment.com/favicons/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="https://winninghousefulfillment.com/favicons/ms-icon-144x144.png">
+
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="preload" as="style" href="https://winninghousefulfillment.com/build/assets/app-B3_3Xd6h.css"><link rel="modulepreload" as="script" href="https://winninghousefulfillment.com/build/assets/app-DNxiirP_.js"><link rel="stylesheet" href="https://winninghousefulfillment.com/build/assets/app-B3_3Xd6h.css" data-navigate-track="reload"><script type="module" src="https://winninghousefulfillment.com/build/assets/app-DNxiirP_.js" data-navigate-track="reload"></script><script id="browser-logger-active">
+(function() {
+    const ENDPOINT = 'https://winninghousefulfillment.com/_boost/browser-logs';
+    const logQueue = [];
+    let flushTimeout = null;
+
+    console.log('🔍 Browser logger active (MCP server detected). Posting to: ' + ENDPOINT);
+
+    // Store original console methods
+    const originalConsole = {
+        log: console.log,
+        info: console.info,
+        error: console.error,
+        warn: console.warn,
+        table: console.table
+    };
+
+    // Helper to safely stringify values
+    function safeStringify(obj) {
+        const seen = new WeakSet();
+        return JSON.stringify(obj, (key, value) => {
+            if (typeof value === 'object' && value !== null) {
+                if (seen.has(value)) return '[Circular]';
+                seen.add(value);
+            }
+            if (value instanceof Error) {
+                return {
+                    name: value.name,
+                    message: value.message,
+                    stack: value.stack
+                };
+            }
+            return value;
+        });
+    }
+
+    // Batch and send logs
+    function flushLogs() {
+        if (logQueue.length === 0) return;
+
+        const batch = logQueue.splice(0, logQueue.length);
+
+        fetch(ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ logs: batch })
+        }).catch(err => {
+            // Silently fail to avoid infinite loops
+            originalConsole.error('Failed to send logs:', err);
+        });
+    }
+
+    // Debounced flush (100ms)
+    function scheduleFlush() {
+        if (flushTimeout) clearTimeout(flushTimeout);
+        flushTimeout = setTimeout(flushLogs, 100);
+    }
+
+    // Intercept console methods
+    ['log', 'info', 'error', 'warn', 'table'].forEach(method => {
+        console[method] = function(...args) {
+            // Call original method
+            originalConsole[method].apply(console, args);
+
+            // Capture log data
+            try {
+                logQueue.push({
+                    type: method,
+                    timestamp: new Date().toISOString(),
+                    data: args.map(arg => {
+                        try {
+                            return typeof arg === 'object' ? JSON.parse(safeStringify(arg)) : arg;
+                        } catch (e) {
+                            return String(arg);
+                        }
+                    }),
+                    url: window.location.href,
+                    userAgent: navigator.userAgent
+                });
+
+                scheduleFlush();
+            } catch (e) {
+                // Fail silently
+            }
+        };
+    });
+
+    // Global error handlers for uncaught errors
+    const originalOnError = window.onerror;
+    window.onerror = function boostErrorHandler(errorMsg, url, lineNumber, colNumber, error) {
+        try {
+            logQueue.push({
+                type: 'uncaught_error',
+                timestamp: new Date().toISOString(),
+                data: [{
+                    message: errorMsg,
+                    filename: url,
+                    lineno: lineNumber,
+                    colno: colNumber,
+                    error: error ? {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack
+                    } : null
+                }],
+                url: window.location.href,
+                userAgent: navigator.userAgent
+            });
+
+            scheduleFlush();
+        } catch (e) {
+            // Fail silently
+        }
+
+        // Call original handler if it exists
+        if (originalOnError && typeof originalOnError === 'function') {
+            return originalOnError(errorMsg, url, lineNumber, colNumber, error);
+        }
+
+        // Let the error continue to propagate
+        return false;
+    }
+    window.addEventListener('error', (event) => {
+        try {
+            logQueue.push({
+                type: 'window_error',
+                timestamp: new Date().toISOString(),
+                data: [{
+                    message: event.message,
+                    filename: event.filename,
+                    lineno: event.lineno,
+                    colno: event.colno,
+                    error: event.error ? {
+                        name: event.error.name,
+                        message: event.error.message,
+                        stack: event.error.stack
+                    } : null
+                }],
+                url: window.location.href,
+                userAgent: navigator.userAgent
+            });
+
+            scheduleFlush();
+        } catch (e) {
+            // Fail silently
+        }
+
+        // Let the error continue to propagate
+        return false;
+    });
+    window.addEventListener('unhandledrejection', (event) => {
+        try {
+            logQueue.push({
+                type: 'error',
+                timestamp: new Date().toISOString(),
+                data: [{
+                    message: 'Unhandled Promise Rejection',
+                    reason: event.reason instanceof Error ? {
+                        name: event.reason.name,
+                        message: event.reason.message,
+                        stack: event.reason.stack
+                    } : event.reason
+                }],
+                url: window.location.href,
+                userAgent: navigator.userAgent
+            });
+
+            scheduleFlush();
+        } catch (e) {
+            // Fail silently
+        }
+
+        // Let the rejection continue to propagate
+        return false;
+    });
+
+    // Flush on page unload
+    window.addEventListener('beforeunload', () => {
+        if (logQueue.length > 0) {
+            navigator.sendBeacon(ENDPOINT, JSON.stringify({ logs: logQueue }));
+        }
+    });
+})();
+</script>
+<!-- Livewire Styles --><style>[wire\:loading][wire\:loading], [wire\:loading\.delay][wire\:loading\.delay], [wire\:loading\.inline-block][wire\:loading\.inline-block], [wire\:loading\.inline][wire\:loading\.inline], [wire\:loading\.block][wire\:loading\.block], [wire\:loading\.flex][wire\:loading\.flex], [wire\:loading\.table][wire\:loading\.table], [wire\:loading\.grid][wire\:loading\.grid], [wire\:loading\.inline-flex][wire\:loading\.inline-flex] {display: none;}[wire\:loading\.delay\.none][wire\:loading\.delay\.none], [wire\:loading\.delay\.shortest][wire\:loading\.delay\.shortest], [wire\:loading\.delay\.shorter][wire\:loading\.delay\.shorter], [wire\:loading\.delay\.short][wire\:loading\.delay\.short], [wire\:loading\.delay\.default][wire\:loading\.delay\.default], [wire\:loading\.delay\.long][wire\:loading\.delay\.long], [wire\:loading\.delay\.longer][wire\:loading\.delay\.longer], [wire\:loading\.delay\.longest][wire\:loading\.delay\.longest] {display: none;}[wire\:offline][wire\:offline] {display: none;}[wire\:dirty]:not(textarea):not(input):not(select) {display: none;}:root {--livewire-progress-bar-color: #2299dd;}[x-cloak] {display: none !important;}[wire\:cloak] {display: none !important;}</style>
+<style>/* Make clicks pass-through */
+
+    #nprogress {
+      pointer-events: none;
+    }
+
+    #nprogress .bar {
+      background: var(--livewire-progress-bar-color, #29d);
+
+      position: fixed;
+      z-index: 1031;
+      top: 0;
+      left: 0;
+
+      width: 100%;
+      height: 2px;
+    }
+
+    /* Fancy blur effect */
+    #nprogress .peg {
+      display: block;
+      position: absolute;
+      right: 0px;
+      width: 100px;
+      height: 100%;
+      box-shadow: 0 0 10px var(--livewire-progress-bar-color, #29d), 0 0 5px var(--livewire-progress-bar-color, #29d);
+      opacity: 1.0;
+
+      -webkit-transform: rotate(3deg) translate(0px, -4px);
+          -ms-transform: rotate(3deg) translate(0px, -4px);
+              transform: rotate(3deg) translate(0px, -4px);
+    }
+
+    /* Remove these to get rid of the spinner */
+    #nprogress .spinner {
+      display: block;
+      position: fixed;
+      z-index: 1031;
+      top: 15px;
+      right: 15px;
+    }
+
+    #nprogress .spinner-icon {
+      width: 18px;
+      height: 18px;
+      box-sizing: border-box;
+
+      border: solid 2px transparent;
+      border-top-color: var(--livewire-progress-bar-color, #29d);
+      border-left-color: var(--livewire-progress-bar-color, #29d);
+      border-radius: 50%;
+
+      -webkit-animation: nprogress-spinner 400ms linear infinite;
+              animation: nprogress-spinner 400ms linear infinite;
+    }
+
+    .nprogress-custom-parent {
+      overflow: hidden;
+      position: relative;
+    }
+
+    .nprogress-custom-parent #nprogress .spinner,
+    .nprogress-custom-parent #nprogress .bar {
+      position: absolute;
+    }
+
+    @-webkit-keyframes nprogress-spinner {
+      0%   { -webkit-transform: rotate(0deg); }
+      100% { -webkit-transform: rotate(360deg); }
+    }
+    @keyframes nprogress-spinner {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    </style></head>
+
+<body class="bg-base-200 min-h-screen font-sans antialiased">
+
+    <div class="bg-base-100 border-base-content/10 border-b-[length:var(--border)] sticky top-0 z-10">
+        <div class="flex items-center px-6 py-3">
+            <div class="flex-1 flex items-center">
+                <label class="btn btn-ghost btn-sm btn-square lg:hidden" for="main-drawer">
+                <svg class="inline flex-shrink-0 w-5 h-5 cursor-pointer" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+</svg>
+                </label>
+            <a href="https://winninghousefulfillment.com/home" wire:navigate="" class="flex items-center space-x-3 transition-all duration-200 hover:opacity-80">
+    <!-- Full Brand (visible when expanded) -->
+    <div class="hidden-when-collapsed flex items-center space-x-3">
+        <!-- Logo Icon -->
+        <div class="flex-shrink-0">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white p-1 shadow-lg">
+                <img src="https://winninghousefulfillment.com/images/Logo-Winning-House.png" alt="Winning House Logo" class="h-8 w-8 object-contain">
+            </div>
+        </div>
+
+        <!-- Brand Text -->
+        <div class="flex flex-col">
+            <span class="text-xl font-bold leading-none text-gray-800 dark:text-white">Winning House</span>
+            <span class="text-primary text-xs leading-none dark:text-purple-400">Warehouse Management System</span>
+        </div>
+    </div>
+
+    <!-- Collapsed Brand (visible when collapsed) -->
+    <div class="display-when-collapsed hidden">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1 shadow-lg">
+            <img src="https://winninghousefulfillment.com/images/Logo-Winning-House.png" alt="Winning House Logo" class="h-8 w-8 object-contain">
+        </div>
+    </div>
+</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 md:gap-3">
+                    
+                    <div class="hidden md:flex md:items-center md:gap-2">
+                        <div wire:snapshot="{&quot;data&quot;:{&quot;confirmStopModal&quot;:false},&quot;memo&quot;:{&quot;id&quot;:&quot;S0eb6EfZwge3700tgtaT&quot;,&quot;name&quot;:&quot;components.return-to-original-user&quot;,&quot;path&quot;:&quot;client\/awb-documents&quot;,&quot;method&quot;:&quot;GET&quot;,&quot;children&quot;:[],&quot;scripts&quot;:[],&quot;assets&quot;:[],&quot;errors&quot;:[],&quot;locale&quot;:&quot;id&quot;},&quot;checksum&quot;:&quot;035dadbccd70fc57d6dd6d6d32e19cdb37529ab597713f0f9cd9b5e36ccdbdda&quot;}" wire:effects="[]" wire:id="S0eb6EfZwge3700tgtaT">
+    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+</div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <img class="size-10 rounded-full" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAH00lEQVR4nO2dWW/aShiG37GpHXbCIiCNUkSrtBepVIn//xO4aqWqlRI11CpL2RWMwdu5ODUigFfGxgY/Vwk2nmFef9t4bBNd1xETHhKn7oAHvJxBhHovfCLsguwNfrvddn2QVqt1SMRQikRC5rJedcbL4Dul1WrtfhQKgcIiiA74K4AdWwKdVJhTCrJp+JRC7LJjOYGLcwpBQinELqcSJmhB9DCLYMY/cQIRhQmiEfxvFZEUA9hYsg5vKbcrfBWk3W5vhIiqGAZbv0H/97t8wS+XFYk44RU/44tvgpyjELv4EVtou6xIxwq3+BFbaApy8uLuFGz9Xiqi0HJZF2MVVtBwYTQsJBbjH1suzDPHChKKibAQ4nlcjnFZsWVY4NV9ebWQWAwbvLovL4LEbsodrsbLk4XE1uEML+PkRpCLKvpo4bZ4dGUhsRjecDNujgTxc3bzknAyjk7T3thVUcBJKuzEQmIxKOEkFQ7qimGMQ+wEia2DMnZWYiVILIZPWIkSu6yQYSZInOYGw944m1pI7K78xWx8A1v9fnd3h0ql4mhfXdehaRoURYGqqlgulxBFEfP5HJIkHd2XfD6PTCaDdDoNjuPAsixYloWqqlBVFev1GsvlEovFAvP5HIqiHN2mUw4Vhr4EczeCWPHy8oJ+v4/pdOr6u7VaDZVKBRzHOf6OrusQRRGTyQSj0Yi6OLvFYtjvD9kjk8kgk8lgOp3i+fnZ0QDxPI9ms4lUKuW6PUII0uk00uk03r59i8FgAEEQvHTdEbsxJDKpbqFQwP39PViWtdyP4zjc3997EmMXQghkWT76ONvspsCRTnuTySSazablPu/fv3floqzQNA3D4ZDKscyItCAAkMvlkM/nD26rVCpULMNgPB5DVVVqxztEKGLIcrnEjx8/Nv8TQpBIJJBMJnF9fY1CoQBCzCdJa7UaZrPZ3uelUsmyXUmSMBgMIEkSFEUBy7LgOA6pVArZbHZPzL9//7r8Ze7ZFuRk8UPX9b0zT1EUSJKEyWSCXC6HDx8+mIqSTqc3aatBIpFAOp02bXMymeDp6engtvF4DOD/+FMsFlEqlaCqKkRRdPvTHNFut40bU0koLMSO+XyOfr+PWq12cDshBNls9lUqzPO86fF0XUen07Ftd71eo9frodfr2SYPtIhMDBmNRpbb37x58+r/RML8XFNV1XU94XfsMIiMIJIkwerq5q4AmqaZ7mtU5mEkMoIA1oO8G1+s6gVCCG5vb6n1iyaGIKEvCAkhlmf1rguSJMlSlHK5jGazaenagsQoECNjIZlMxnL7oZhgZEtmXF9f4+HhATc3N6FxYZERpF6vW25fLBZ7n/V6PdupDpZlUa/X8fnzZ9ze3u4lB0ETekEYhkGj0UA2mzXdZ7VaYbVa7X2uKAqen58tkwEDlmVRrVbx8PCAu7u7kwkTCge6HR+Mv3meRyaTQalUsp2LsnJNs9kMv379QqPRsKz2DRiGQaVSQalUQr/fR7fbdSQoLUIhSDKZxJcvXzx9V5Zl9Ho9y33G4zEURUGj0XB85jMMg3q9jmKxiKenJ9+q9L12A2nFJ3Rdx+/fvy3TYYP5fI5v376h3+872t+A53l8/PgRhULhmK46JtKCCIKAyWTieH9N0yAIwkYYp9U3wzBoNpu2mR4NIimILMt4fHzEYDDw/H1BEPD161f8+fPH0TQKIcRxHDqGUMQQp8iyjOFwiMFgQOXatqqq6Ha76Pf7qFarqFarlvUIz/MolUq+XqQKpSCapm1WgKxWKywWi80KEL/a63a7GI1GaDabltP2hULh/AURRRHfv38/dTewXq/x8+dPfPr0Cclk8uA+VmLRIJIxxE80TbNMo/2eYjEEIQee0nmxrNfrwNs01medrYW8e/fONkibYeauAOtpfRqEIob4Ac/zKJfLuLm5wXQ6xXg8xnw+t50G4TjOciJzuVzS7uorzlYQA4ZhUCwWUSwWoaoqXl5esFgsIIoiZFmGqqoghIDjOORyOZTLZUur8rKE1Q1nL8g2LMsin8+bruOyQ5Zl22ssx7IdQ+LAbkOn03E1D+aU7QXXZxvUaSMIgu/uCjhjl0XrGoaiKBAEwXYZEi3OVpDHx0cUi0WUy2VP1bWiKBiPx+h2u4HesLMrCGm1WqFfgeIEY6X6cDhEIpFALpdDKpXC1dUVrq6uwDDMJptSVRWapmG1WkEURSwWC8xms0CuFJ7shp1Op+No+aYfGGe73xkSDQ4F9TjbCohDzz6Js6yQYSpIbCX+Yja+ZoKE4n1MF8DeOMcuK2RYCRIHd5+wepCZnYXEolDG7qlyscsKGU4Eia2EErSeuWjcJUqjTxdLq9Vy9IQlR4K0Wq04DaaAk3F0FUNiK/GGm3FzIwhBHE9csxU3HHkZT1lWLIozvIyTF0HieOIOV+PltQ6JXZcNXt+wc+xb2i7yVXlWHPte9mMr9dh9HcbzuNCYOond1z9ovMeQ5rtwL9Z9HeumtqE5uUiAy0uJaYoB0J/tvaji0W3R54T4feoe8PN96n5dDyEAyDnOEm/N2lK1DAO/LGSXyAd82rHCjKCuGEY6tvgRK8wIykK2iUR88TNOWHEKQQxCKcyphNg0eEJBtjl5jAkqRtgRFkEMXnXGT4EOxLNQzMuFTZBd9jrnRSSTZCIUAuwSdkEO4aXDoRz8Q/wHZqFtFw6Uon0AAAAASUVORK5CYII=" alt="Avatar">
+                        <div class="hidden text-left md:block">
+                            <div class="font-semibold">PT SAHADA LAKU UTAMA</div>
+                            <div class="text-xs opacity-70">gamamilk@winninghouse.com</div>
+                        </div>
+                    </div>
+
+                    <details x-data="{open: false}" @click.outside="open = false" :open="open" class="dropdown">
+        <!-- CUSTOM TRIGGER -->
+                    <summary x-ref="button" @click.prevent="open = !open" class="list-none">
+                <button wire:key="marye09c2b38978a84301ab9c2e650082ae3" type="button" class="btn btn-circle btn-sm md:btn-md">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"></path>
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+            </summary>
+        
+        <ul class="p-2 shadow menu z-[1] border-[length:var(--border)] border-base-content/10 bg-base-100 rounded-box w-auto min-w-max" @click="open = false" x-anchor.bottom-start="$refs.button" style="left: -170px; top: 40px; position: absolute;">
+            <div wire:key="dropdown-slot-marydd8b83084b59db2823ae0035f6334308">
+                <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap w-48" @click="$dispatch('mary-toggle-theme')">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 0 0 5.304 0l6.401-6.402M6.75 21A3.75 3.75 0 0 1 3 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 0 0 3.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008Z"></path>
+</svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Theme
+
+                                                </span>
+                    </a>
+    </li>                        <hr class="my-3 border-t-[length:var(--border)] border-base-content/10">
+
+                            <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap w-48" href="https://winninghousefulfillment.com/profile" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path>
+</svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Profile
+
+                                                </span>
+                    </a>
+    </li>                        <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap text-error w-48" href="https://winninghousefulfillment.com/logout" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9"></path>
+</svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Logout
+
+                                                </span>
+                    </a>
+    </li>
+            </div>
+        </ul>
+    </details>                </div>
+            </div>
+        </div>
+    </div>
+    
+    <main class="w-full mx-auto">
+    <div class="drawer lg:drawer-open">
+        <input id="main-drawer" type="checkbox" class="drawer-toggle">
+        <div class="drawer-content w-full mx-auto p-5 lg:px-10 lg:py-5">
+            
+            <div wire:snapshot="{&quot;data&quot;:{&quot;search&quot;:&quot;&quot;,&quot;perPage&quot;:10,&quot;platform_filter&quot;:null,&quot;showUploadModal&quot;:false,&quot;drawer&quot;:false,&quot;deleteModal&quot;:false,&quot;showEditModal&quot;:false,&quot;description&quot;:&quot;&quot;,&quot;platform_id&quot;:null,&quot;pdfFiles&quot;:[[],{&quot;s&quot;:&quot;arr&quot;}],&quot;previewCode&quot;:&quot;&quot;,&quot;idToEdit&quot;:null,&quot;editDescription&quot;:&quot;&quot;,&quot;editPlatformId&quot;:null,&quot;idToDelete&quot;:null,&quot;platformOptions&quot;:[[[{&quot;id&quot;:1,&quot;name&quot;:&quot;TOKOPEDIA&quot;},{&quot;s&quot;:&quot;arr&quot;}],[{&quot;id&quot;:2,&quot;name&quot;:&quot;SHOPEE&quot;},{&quot;s&quot;:&quot;arr&quot;}],[{&quot;id&quot;:3,&quot;name&quot;:&quot;LAZADA&quot;},{&quot;s&quot;:&quot;arr&quot;}],[{&quot;id&quot;:4,&quot;name&quot;:&quot;TIKTOK SHOP&quot;},{&quot;s&quot;:&quot;arr&quot;}],[{&quot;id&quot;:5,&quot;name&quot;:&quot;SOSCOM&quot;},{&quot;s&quot;:&quot;arr&quot;}],[{&quot;id&quot;:6,&quot;name&quot;:&quot;REGULAR&quot;},{&quot;s&quot;:&quot;arr&quot;}]],{&quot;s&quot;:&quot;arr&quot;}],&quot;paginators&quot;:[{&quot;page&quot;:1},{&quot;s&quot;:&quot;arr&quot;}]},&quot;memo&quot;:{&quot;id&quot;:&quot;Wy3Ihu749RqqLZ20l82s&quot;,&quot;name&quot;:&quot;client.awb-documents&quot;,&quot;path&quot;:&quot;client\/awb-documents&quot;,&quot;method&quot;:&quot;GET&quot;,&quot;children&quot;:[],&quot;scripts&quot;:[],&quot;assets&quot;:[],&quot;errors&quot;:[],&quot;locale&quot;:&quot;id&quot;},&quot;checksum&quot;:&quot;02af3f506a0337226f203630a1074cd91fe7b5df52910d3e3f75ec65c3c7da6e&quot;}" wire:effects="{&quot;url&quot;:{&quot;paginators.page&quot;:{&quot;as&quot;:&quot;page&quot;,&quot;use&quot;:&quot;push&quot;,&quot;alwaysShow&quot;:false,&quot;except&quot;:null}}}" wire:id="Wy3Ihu749RqqLZ20l82s">
+         
+    <div id="upload-awb" class="mb-10">
+    <div class="flex flex-wrap gap-5 justify-between items-center">
+        <div>
+            <div class="flex items-center text-2xl font-extrabold ">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <span class="">Upload AWB</span>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!--[if BLOCK]><![endif]-->                <div class="text-base-content/50 text-sm mt-1 ">
+                    Upload dan kelola dokumen AWB PDF
+                </div>
+            <!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <div class="flex items-center gap-3 ">
+            <button wire:key="mary073755f8856461b8eba78856b2489ec7" type="button" wire:click="openDrawer" class="btn btn-secondary">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    <span class="">
+                Filter
+            </span>
+                    
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                <button wire:key="mary78f670c68b79c9fec02d7fd46dddf3ca" type="button" wire:click="openUploadModal" class="btn btn-primary">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    <span class="">
+                Upload AWB
+            </span>
+                    
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+        </div>
+    </div>
+
+    <!--[if BLOCK]><![endif]-->        <hr class="border-t-[length:var(--border)] border-base-content/10 mt-3">
+
+        <!--[if BLOCK]><![endif]-->            <div class="h-0.5 -mt-4 mb-4">
+                <progress class="progress progress-primary w-full h-[var(--border)]" wire:loading=""></progress>
+            </div>
+        <!--[if ENDBLOCK]><![endif]-->
+    <!--[if ENDBLOCK]><![endif]-->
+</div>
+    
+    <div class="space-y-4">
+        
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <div class="bg-base-100 rounded-lg px-5 py-4  w-full text-primary">
+        <div class="flex items-center gap-3">
+            <!--[if BLOCK]><![endif]-->                <div class="  ">
+                    <svg class="inline flex-shrink-0 w-9 h-9" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"></path>
+</svg>
+                    </div>
+            <!--[if ENDBLOCK]><![endif]-->
+
+            <div class="text-left rtl:text-right truncate">
+                <!--[if BLOCK]><![endif]-->                    <div class="text-xs text-base-content/50 whitespace-nowrap">Total AWB Terupload</div>
+                <!--[if ENDBLOCK]><![endif]-->
+
+                <div class="font-black text-xl">4</div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+        </div>
+    </div>
+        <!--[if BLOCK]><![endif]-->            <div class="card bg-base-100 rounded-lg p-5 transition-shadow duration-200 hover:shadow-lg" wire:key="maryda800a027fb9b783584bb9ee9c0aa9a6">
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <div class="grow-1 null">
+            <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+                    
+                    <div class="flex-1">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+                            <div class="flex-1">
+                                <div class="mb-2 flex items-center gap-2">
+                                    <svg class="inline flex-shrink-0 text-primary h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"></path>
+</svg>
+                                        <h3 class="text-primary font-semibold">
+                                        AWB26041100001
+                                    </h3>
+                                    <!--[if BLOCK]><![endif]-->                                        <span class="text-sm text-gray-500">
+                                            (GAMAMILK_AWB_260411105307.pdf)
+                                        </span>
+                                    <!--[if ENDBLOCK]><![endif]-->
+                                </div>
+
+                                <!--[if BLOCK]><![endif]-->                                    <p class="mb-2 text-sm text-gray-600">
+                                        TRIAL JANGAN DI PROSES
+                                    </p>
+                                <!--[if ENDBLOCK]><![endif]-->
+
+                                <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                                    <!--[if BLOCK]><![endif]-->                                        <div class="badge badge-primary badge-sm">
+        SOSCOM
+    </div>                                    <!--[if ENDBLOCK]><![endif]-->
+                                    <div class="badge badge-ghost badge-sm" icon="o-clock">
+        11 April 2026, 10:53
+    </div>                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                        
+                        <div class="flex flex-col items-start sm:items-end">
+                            <!--[if BLOCK]><![endif]-->                                <div class="badge badge-warning">
+        Belum Dicetak
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+                        </div>
+
+                        
+                        <div class="flex gap-2">
+                            <!--[if BLOCK]><![endif]-->                                <button wire:key="maryd24a88eb52ff37b7bb377fa24452c99b" type="button" onclick="window.open('https://winninghousefulfillment.com/storage/6efdb434-233b-4040-9bfd-67bdf2dce10c/GAMAMILK_AWB_260411105307.pdf?download=1', '_blank')" class="btn !inline-flex lg:tooltip lg:tooltip-top btn-ghost btn-sm" data-tip="Download PDF">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                                <!--[if ENDBLOCK]><![endif]-->
+
+                            <!--[if BLOCK]><![endif]-->                                <button wire:key="maryaf5824d9d00df4f876c5e1f20b30fa7c" type="button" wire:click="openEditModal(9)" class="btn !inline-flex lg:tooltip lg:tooltip-top btn-ghost btn-sm text-warning hover:bg-warning hover:text-white" data-tip="Edit Dokumen">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                                    <button wire:key="mary5e3eb91aeb0a9463a1380a4971ebf245" type="button" wire:click="confirmDelete(9)" wire:loading.attr="disabled" wire:target="confirmDelete(9)" class="btn !inline-flex lg:tooltip lg:tooltip-top btn-ghost btn-sm text-error hover:bg-error hover:text-white" data-tip="Hapus Dokumen">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                                <!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+    </div>                    <div class="card bg-base-100 rounded-lg p-5 transition-shadow duration-200 hover:shadow-lg" wire:key="maryda800a027fb9b783584bb9ee9c0aa9a6">
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <div class="grow-1 null">
+            <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+                    
+                    <div class="flex-1">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+                            <div class="flex-1">
+                                <div class="mb-2 flex items-center gap-2">
+                                    <svg class="inline flex-shrink-0 text-primary h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"></path>
+</svg>
+                                        <h3 class="text-primary font-semibold">
+                                        AWB26041000002
+                                    </h3>
+                                    <!--[if BLOCK]><![endif]-->                                        <span class="text-sm text-gray-500">
+                                            (GAMAMILK_AWB_260410161838.pdf)
+                                        </span>
+                                    <!--[if ENDBLOCK]><![endif]-->
+                                </div>
+
+                                <!--[if BLOCK]><![endif]-->                                    <p class="mb-2 text-sm text-gray-600">
+                                        TRIAL UPLOAD RESI TOLONG JANGAN DIPROSES
+                                    </p>
+                                <!--[if ENDBLOCK]><![endif]-->
+
+                                <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                                    <!--[if BLOCK]><![endif]-->                                        <div class="badge badge-primary badge-sm">
+        SOSCOM
+    </div>                                    <!--[if ENDBLOCK]><![endif]-->
+                                    <div class="badge badge-ghost badge-sm" icon="o-clock">
+        10 April 2026, 16:18
+    </div>                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                        
+                        <div class="flex flex-col items-start sm:items-end">
+                            <!--[if BLOCK]><![endif]-->                                <div class="badge badge-warning">
+        Belum Dicetak
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+                        </div>
+
+                        
+                        <div class="flex gap-2">
+                            <!--[if BLOCK]><![endif]-->                                <button wire:key="maryd24a88eb52ff37b7bb377fa24452c99b" type="button" onclick="window.open('https://winninghousefulfillment.com/storage/f40d37cf-31e0-487c-aa72-8387e2c5db04/GAMAMILK_AWB_260410161838.pdf?download=1', '_blank')" class="btn !inline-flex lg:tooltip lg:tooltip-top btn-ghost btn-sm" data-tip="Download PDF">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                                <!--[if ENDBLOCK]><![endif]-->
+
+                            <!--[if BLOCK]><![endif]-->                                <button wire:key="maryaf5824d9d00df4f876c5e1f20b30fa7c" type="button" wire:click="openEditModal(8)" class="btn !inline-flex lg:tooltip lg:tooltip-top btn-ghost btn-sm text-warning hover:bg-warning hover:text-white" data-tip="Edit Dokumen">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                                    <button wire:key="mary5e3eb91aeb0a9463a1380a4971ebf245" type="button" wire:click="confirmDelete(8)" wire:loading.attr="disabled" wire:target="confirmDelete(8)" class="btn !inline-flex lg:tooltip lg:tooltip-top btn-ghost btn-sm text-error hover:bg-error hover:text-white" data-tip="Hapus Dokumen">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                                <!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+    </div>                    <div class="card bg-base-100 rounded-lg p-5 transition-shadow duration-200 hover:shadow-lg" wire:key="maryda800a027fb9b783584bb9ee9c0aa9a6">
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <div class="grow-1 null">
+            <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+                    
+                    <div class="flex-1">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+                            <div class="flex-1">
+                                <div class="mb-2 flex items-center gap-2">
+                                    <svg class="inline flex-shrink-0 text-primary h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"></path>
+</svg>
+                                        <h3 class="text-primary font-semibold">
+                                        AWB26041000001
+                                    </h3>
+                                    <!--[if BLOCK]><![endif]-->                                        <span class="text-sm text-gray-500">
+                                            (GAMAMILK_AWB_260410161838.pdf)
+                                        </span>
+                                    <!--[if ENDBLOCK]><![endif]-->
+                                </div>
+
+                                <!--[if BLOCK]><![endif]-->                                    <p class="mb-2 text-sm text-gray-600">
+                                        TRIAL UPLOAD RESI TOLONG JANGAN DIPROSES
+                                    </p>
+                                <!--[if ENDBLOCK]><![endif]-->
+
+                                <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                                    <!--[if BLOCK]><![endif]-->                                        <div class="badge badge-primary badge-sm">
+        SOSCOM
+    </div>                                    <!--[if ENDBLOCK]><![endif]-->
+                                    <div class="badge badge-ghost badge-sm" icon="o-clock">
+        10 April 2026, 16:18
+    </div>                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                        
+                        <div class="flex flex-col items-start sm:items-end">
+                            <!--[if BLOCK]><![endif]-->                                <div class="badge badge-warning">
+        Belum Dicetak
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+                        </div>
+
+                        
+                        <div class="flex gap-2">
+                            <!--[if BLOCK]><![endif]-->                                <button wire:key="maryd24a88eb52ff37b7bb377fa24452c99b" type="button" onclick="window.open('https://winninghousefulfillment.com/storage/2a245ba9-7664-4d6a-89c7-634bbea42259/GAMAMILK_AWB_260410161838.pdf?download=1', '_blank')" class="btn !inline-flex lg:tooltip lg:tooltip-top btn-ghost btn-sm" data-tip="Download PDF">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                                <!--[if ENDBLOCK]><![endif]-->
+
+                            <!--[if BLOCK]><![endif]-->                                <button wire:key="maryaf5824d9d00df4f876c5e1f20b30fa7c" type="button" wire:click="openEditModal(7)" class="btn !inline-flex lg:tooltip lg:tooltip-top btn-ghost btn-sm text-warning hover:bg-warning hover:text-white" data-tip="Edit Dokumen">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                                    <button wire:key="mary5e3eb91aeb0a9463a1380a4971ebf245" type="button" wire:click="confirmDelete(7)" wire:loading.attr="disabled" wire:target="confirmDelete(7)" class="btn !inline-flex lg:tooltip lg:tooltip-top btn-ghost btn-sm text-error hover:bg-error hover:text-white" data-tip="Hapus Dokumen">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                                <!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+    </div>                    <div class="card bg-base-100 rounded-lg p-5 transition-shadow duration-200 hover:shadow-lg" wire:key="maryda800a027fb9b783584bb9ee9c0aa9a6">
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <div class="grow-1 null">
+            <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+                    
+                    <div class="flex-1">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+                            <div class="flex-1">
+                                <div class="mb-2 flex items-center gap-2">
+                                    <svg class="inline flex-shrink-0 text-primary h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"></path>
+</svg>
+                                        <h3 class="text-primary font-semibold">
+                                        AWB26040900001
+                                    </h3>
+                                    <!--[if BLOCK]><![endif]-->                                        <span class="text-sm text-gray-500">
+                                            (GAMAMILK_AWB_260409153844.pdf)
+                                        </span>
+                                    <!--[if ENDBLOCK]><![endif]-->
+                                </div>
+
+                                <!--[if BLOCK]><![endif]-->                                    <p class="mb-2 text-sm text-gray-600">
+                                        resi percobaan mohon jangan di proses 
+                                    </p>
+                                <!--[if ENDBLOCK]><![endif]-->
+
+                                <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                                    <!--[if BLOCK]><![endif]-->                                        <div class="badge badge-primary badge-sm">
+        SOSCOM
+    </div>                                    <!--[if ENDBLOCK]><![endif]-->
+                                    <div class="badge badge-ghost badge-sm" icon="o-clock">
+        09 April 2026, 15:38
+    </div>                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                        
+                        <div class="flex flex-col items-start sm:items-end">
+                            <!--[if BLOCK]><![endif]-->                                <div class="badge badge-success">
+        1x Dicetak
+    </div>                                <!--[if BLOCK]><![endif]-->                                    <div class="mt-1 text-xs text-gray-500">
+                                        Terakhir: 09/04/2026 15:39
+                                    </div>
+                                <!--[if ENDBLOCK]><![endif]-->
+                            <!--[if ENDBLOCK]><![endif]-->
+                        </div>
+
+                        
+                        <div class="flex gap-2">
+                            <!--[if BLOCK]><![endif]-->                                <button wire:key="maryd24a88eb52ff37b7bb377fa24452c99b" type="button" onclick="window.open('https://winninghousefulfillment.com/storage/a22748aa-7505-422d-9d12-dc1cb50c4b67/GAMAMILK_AWB_260409153844.pdf?download=1', '_blank')" class="btn !inline-flex lg:tooltip lg:tooltip-top btn-ghost btn-sm" data-tip="Download PDF">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                                <!--[if ENDBLOCK]><![endif]-->
+
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+    </div>        <!--[if ENDBLOCK]><![endif]-->
+    </div>
+
+    
+    <div class="mary-table-pagination">
+    <div class="mb-4 border-t-[length:var(--border)] border-t-base-content/5" wire:model.live="perPage"></div>
+    <div class="justify-between md:flex md:flex-row w-auto md:w-full items-center overflow-y-auto pl-2 pr-2 relative">
+        <!--[if BLOCK]><![endif]-->        <div class="flex flex-row justify-center md:justify-start mb-2 md:mb-0 py-1">
+            <select id="mary301a562975734ba9dd9100578c6f0ecd" wire:model.live="perPage" class="select select-sm flex sm:text-sm sm:leading-6 w-auto md:mr-5">
+                <!--[if BLOCK]><![endif]-->                <option value="10" selected="">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                <!--[if ENDBLOCK]><![endif]-->
+            </select>
+        </div>
+        <!--[if ENDBLOCK]><![endif]-->
+        <div class="w-full">
+        <!--[if BLOCK]><![endif]-->            <div>
+    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+</div>
+
+        <!--[if ENDBLOCK]><![endif]-->
+        </div>
+    </div>
+</div>
+    
+    <dialog class="modal backdrop-blur" x-data="{open: window.Livewire.find('Wy3Ihu749RqqLZ20l82s').entangle('showUploadModal').live }" x-init="$watch('open', value =&gt; { if (!value){ $dispatch('close') }else{ $dispatch('open') } })" :class="{'modal-open !animate-none': open}" :open="open" @keydown.escape.window="$wire.showUploadModal = false" x-trap="open" x-bind:inert="!open" inert="inert">
+    <div class="modal-box ">
+        <!--[if BLOCK]><![endif]-->            <form method="dialog" tabindex="-1">
+                <!--[if BLOCK]><![endif]-->                    <button wire:key="maryeb7dfc4cd6dac92d14eead70d278ee4b" type="button" @click="$wire.showUploadModal = false" tabindex="-1" class="btn btn-circle btn-sm btn-ghost absolute end-2 top-2 z-[999]">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                    <!--[if ENDBLOCK]><![endif]-->
+            </form>
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]-->            <div id="upload-awb" class="mb-10 !mb-5">
+    <div class="flex flex-wrap gap-5 justify-between items-center">
+        <div>
+            <div class="flex items-center text-xl font-extrabold ">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <span class="">Upload AWB</span>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <div class="flex items-center gap-3 ">
+            
+        </div>
+    </div>
+
+    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+</div>        <!--[if ENDBLOCK]><![endif]-->
+
+        <div>
+            <form wire:submit="uploadDocuments" class="grid grid-flow-row auto-rows-min gap-3">
+
+    <div class="space-y-4">
+                <div>
+    
+    <fieldset class="fieldset py-0">
+        
+        <!--[if BLOCK]><![endif]-->            <legend class="fieldset-legend mb-0.5">
+                Kode AWB (Preview)
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </legend>
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <label class="">
+            
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <div class="w-full">
+                
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                
+                <label class="input w-full border-dashed input-bordered bg-gray-50">
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]-->                        <svg class="inline flex-shrink-0 pointer-events-none w-4 h-4 opacity-40" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5-3.9 19.5m-2.1-19.5-3.9 19.5"></path>
+</svg>
+                        <!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                        
+                        <input id="mary8f10fb808d6fdbad1c7510bca6ec2234previewCode" placeholder=" " type="text" class="input-bordered bg-gray-50" wire:model="previewCode" readonly="readonly">
+
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                </label>
+
+                
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+        </label>
+
+        
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        
+        <!--[if BLOCK]><![endif]-->            <div class="fieldset-label" x-classes="fieldset-label">Kode akan di-generate otomatis saat upload</div>
+        <!--[if ENDBLOCK]><![endif]-->
+    </fieldset>
+</div>
+                <div x-data="{ focused: false, selection: window.Livewire.find('Wy3Ihu749RqqLZ20l82s').entangle('platform_id') }">
+        <div @click.outside="clear()" @keyup.esc="clear()" x-data="{
+                options: [{&quot;id&quot;:1,&quot;name&quot;:&quot;TOKOPEDIA&quot;},{&quot;id&quot;:2,&quot;name&quot;:&quot;SHOPEE&quot;},{&quot;id&quot;:3,&quot;name&quot;:&quot;LAZADA&quot;},{&quot;id&quot;:4,&quot;name&quot;:&quot;TIKTOK SHOP&quot;},{&quot;id&quot;:5,&quot;name&quot;:&quot;SOSCOM&quot;},{&quot;id&quot;:6,&quot;name&quot;:&quot;REGULAR&quot;}],
+                isSingle: true,
+                isSearchable: false,
+                isReadonly: false,
+                isDisabled: false,
+                isRequired: false,
+                minChars: 0,
+
+                init() {
+                    // Fix weird issue when navigating back
+                    document.addEventListener('livewire:navigating', () =&gt; {
+                        let elements = document.querySelectorAll('.mary-choices-element');
+                        elements.forEach(el =&gt;  el.remove());
+                    });
+                },
+                get selectedOptions() {
+                    return this.isSingle
+                        ? this.options.filter(i =&gt; i.id == this.selection)
+                        : this.selection.map(i =&gt; this.options.filter(o =&gt; o.id == i)[0])
+                },
+                get noResults() {
+                    if (!this.isSearchable || this.$refs.searchInput.value == '') {
+                        return false
+                    }
+
+                    return this.isSingle
+                            ? (this.selection &amp;&amp; this.options.length  == 1) || (!this.selection &amp;&amp; this.options.length == 0)
+                            : this.options.length &lt;= this.selection.length
+                },
+                get isAllSelected() {
+                    return this.options.length == this.selection.length
+                },
+                get isSelectionEmpty() {
+                    return this.isSingle
+                        ? this.selection == null || this.selection == ''
+                        : this.selection.length == 0
+                },
+                selectAll() {
+                    this.selection = this.options.map(i =&gt; i.id)
+                    this.dispatchChangeEvent({ value: this.selection })
+                },
+                clear() {
+                    this.focused = false;
+                    this.$refs.searchInput.value = ''
+                },
+                reset() {
+                    this.clear();
+                    this.isSingle
+                        ? this.selection = null
+                        : this.selection = []
+
+                    this.dispatchChangeEvent({ value: this.selection})
+                },
+                focus() {
+                    if (this.isReadonly || this.isDisabled) {
+                        return
+                    }
+
+                    this.focused = true
+                    this.$refs.searchInput.focus()
+                },
+                resize() {
+                    $refs.searchInput.style.width = ($refs.searchInput.value.length + 1) * 0.55 + 'rem'
+                },
+                isActive(id) {
+                    return this.isSingle
+                        ? this.selection == id
+                        : this.selection.includes(id)
+                },
+                toggle(id, keepOpen = false) {
+                    if (this.isReadonly || this.isDisabled) {
+                        return
+                    }
+
+                    if (this.isSingle) {
+                        this.selection = id
+                        this.focused = false
+                    } else {
+                        this.selection.includes(id)
+                            ? this.selection = this.selection.filter(i =&gt; i != id)
+                            : this.selection.push(id)
+                    }
+
+                    this.dispatchChangeEvent({ value: this.selection })
+
+                    this.$refs.searchInput.value = ''
+
+                    if (!keepOpen) {
+                        this.$refs.searchInput.focus()
+                    }
+
+                },
+                search(value, event) {
+                    if (value.length &lt; this.minChars) {
+                        return
+                    }
+
+                    // Prevent search for this keys
+                    if (event &amp;&amp; ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Shift', 'CapsLock', 'Tab',
+                                  'Control', 'Alt', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) {
+                        return;
+                    }
+
+                    // Call search function from parent component
+                    // `search(value)` or `search(value, extra1, extra2 ...)`
+                    window.Livewire.find('Wy3Ihu749RqqLZ20l82s').searchPlatforms(value).then(()=&gt; this.resize())
+                },
+                dispatchChangeEvent(detail) {
+                    this.$refs.searchInput.dispatchEvent(new CustomEvent('change-selection', { bubbles: true, detail }))
+                }
+            }" @keydown.up="$focus.previous()" @keydown.down="$focus.next()">
+            <fieldset class="fieldset py-0">
+                
+                <!--[if BLOCK]><![endif]-->                    <legend class="fieldset-legend mb-0.5">
+                        Platform
+
+                        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                    </legend>
+                <!--[if ENDBLOCK]><![endif]-->
+
+                <label class="">
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    <div class="w-full">
+                        
+                        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                        
+                        <label x-ref="container" @click="focus()" class="select w-full min-h-[var(--size)] h-auto pl-2.5">
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            <div class="w-full py-0.5 min-h-3 content-center text-wrap">
+
+                                
+                                <span wire:key="selected-options-maryb1f445927a987e19fdaec609ce98f86a">
+                                    <!--[if BLOCK]><![endif]-->                                        <template x-for="(option, index) in selectedOptions" :key="index">
+                                            <span class="mary-choices-element cursor-pointer badge badge-soft m-0.5 !inline-block !h-auto">
+                                                
+                                                <!--[if BLOCK]><![endif]-->                                                    <span x-text="option?.name"></span>
+                                                <!--[if ENDBLOCK]><![endif]-->
+
+                                                <!--[if BLOCK]><![endif]-->                                                    <svg @click="toggle(option.id)" x-show="!isReadonly &amp;&amp; !isDisabled &amp;&amp; !isSingle" class="inline flex-shrink-0 w-4 h-4 hover:text-error" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+</svg>
+                                                    <!--[if ENDBLOCK]><![endif]-->
+                                            </span>
+                                        </template>
+                                    <!--[if ENDBLOCK]><![endif]-->
+                                </span>
+
+                                
+                                <span :class="(focused || !isSelectionEmpty) &amp;&amp; 'hidden'" class="text-base-content/40">
+                                    Pilih Platform (opsional)
+                                </span>
+
+                                
+                                <input x-ref="searchInput" @input="focus(); resize();" @keydown.arrow-down.prevent="focus()" :required="isRequired &amp;&amp; isSelectionEmpty" class="w-1 !inline-block outline-hidden" readonly="">
+                            </div>
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </label>
+
+                        
+                        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                    </div>
+                </label>
+
+                
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </fieldset>
+
+            
+            <div x-show="focused" class="relative" wire:key="options-list-main-maryb1f445927a987e19fdaec609ce98f86a" style="display: none;">
+                <div wire:key="options-list-maryb1f445927a987e19fdaec609ce98f86a" class="max-h-64 w-full absolute z-10 shadow-xl bg-base-100 border border-base-content/10 rounded-lg cursor-pointer overflow-y-auto" x-anchor.bottom-start="$refs.container" style="left: 419.6px; top: 313.45px; position: absolute;">
+
+                    
+                    <progress wire:loading="" wire:target="searchPlatforms" class="progress absolute top-0 h-0.5"></progress>
+
+                   
+                   <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <div x-show="noResults" wire:key="no-results-1131622559" class="p-3 decoration-wavy decoration-warning underline font-bold border border-s-4 border-s-warning border-b-base-200" style="display: none;">
+                        No results found.
+                    </div>
+
+                    <!--[if BLOCK]><![endif]-->                        <div wire:key="option-1" @click="toggle(1, true)" @keydown.enter="toggle(1, true)" :class="isActive(1) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary6ff43a15809009b44532412bb83ec32c">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        TOKOPEDIA
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-2" @click="toggle(2, true)" @keydown.enter="toggle(2, true)" :class="isActive(2) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary616469b39f9d9a87f62ea9033167bc10">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        SHOPEE
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-3" @click="toggle(3, true)" @keydown.enter="toggle(3, true)" :class="isActive(3) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary4ef72b86b10f664819b201c9253e8d9c">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        LAZADA
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-4" @click="toggle(4, true)" @keydown.enter="toggle(4, true)" :class="isActive(4) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary73d876b85db2b871643c59c9bc284703">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        TIKTOK SHOP
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-5" @click="toggle(5, true)" @keydown.enter="toggle(5, true)" :class="isActive(5) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="maryf79b6ba9603968abd9e547c5efa50522">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        SOSCOM
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-6" @click="toggle(6, true)" @keydown.enter="toggle(6, true)" :class="isActive(6) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary904247911e1c1af8cfcbc50b3ba387b9">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        REGULAR
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    <!--[if ENDBLOCK]><![endif]-->
+                </div>
+            </div>
+        </div>
+    </div>
+                <div>
+    
+    <fieldset class="fieldset py-0">
+        
+        <!--[if BLOCK]><![endif]-->            <legend class="fieldset-legend mb-0.5">
+                Deskripsi
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </legend>
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <label class="">
+            
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <div class="w-full">
+                
+                <textarea placeholder="Deskripsi dokumen (opsional) " class="textarea w-full" id="mary56819e62afad424ab68ec5e87de04b9bdescription" wire:model="description" rows="3" icon="o-document-text"></textarea>
+            </div>
+        </label>
+
+        
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+    </fieldset>
+</div>
+                <div x-data="{
+            progress: 0,
+            cropper: null,
+            justCropped: false,
+            fileChanged: false,
+            imagePreview: null,
+            imageCrop: null,
+            originalImageUrl: null,
+            cropAfterChange: false,
+            file: window.Livewire.find('Wy3Ihu749RqqLZ20l82s').entangle('pdfFiles'),
+            init () {
+                this.imagePreview = this.$refs.preview?.querySelector('img')
+                this.imageCrop = this.$refs.crop?.querySelector('img')
+                this.originalImageUrl = this.imagePreview?.src
+
+                this.$watch('progress', value =&gt; {
+                    if (value == 100 &amp;&amp; this.cropAfterChange &amp;&amp; !this.justCropped) {
+                        this.crop()
+                    }
+                })
+            },
+            get processing () {
+                return this.progress &gt; 0 &amp;&amp; this.progress &lt; 100
+            },
+            close() {
+                $refs.maryCrop.close()
+                this.cropper?.destroy()
+            },
+            change() {
+                if (this.processing) {
+                    return
+                }
+
+                this.$refs.file.click()
+            },
+            refreshImage() {
+                this.progress = 1
+                this.justCropped = false
+
+                if (this.imagePreview?.src) {
+                    this.imagePreview.src = URL.createObjectURL(this.$refs.file.files[0])
+                    this.imageCrop.src = this.imagePreview.src
+                }
+            },
+            crop() {
+                $refs.maryCrop.showModal()
+                this.cropper?.destroy()
+
+                this.cropper = new Cropper(this.imageCrop, {&quot;autoCropArea&quot;:1,&quot;viewMode&quot;:1,&quot;dragMode&quot;:&quot;move&quot;});
+            },
+            revert() {
+                 $wire.$removeUpload('pdfFiles', this.file.split('livewire-file:').pop(), () =&gt; {
+                    this.imagePreview.src = this.originalImageUrl
+                 })
+            },
+            async save() {
+                $refs.maryCrop.close();
+
+                this.progress = 1
+                this.justCropped = true
+
+                this.imagePreview.src = this.cropper.getCroppedCanvas().toDataURL()
+                this.imageCrop.src = this.imagePreview.src
+
+                this.cropper.getCroppedCanvas().toBlob((blob) =&gt; {
+                    blob.name = $refs.file.files[0].name
+                    window.Livewire.find('Wy3Ihu749RqqLZ20l82s').upload('pdfFiles', blob,
+                        (uploadedFilename) =&gt; {  },
+                        (error) =&gt; {  },
+                        (event) =&gt; { this.progress = event.detail.progress }
+                    )
+                }, 'image/png')
+            }
+         }" x-on:livewire-upload-progress="progress = $event.detail.progress;" class="file-input-bordered">
+        <fieldset class="fieldset py-0">
+            
+            <!--[if BLOCK]><![endif]-->                <legend class="fieldset-legend mb-0.5">
+                    File PDF AWB
+
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                </legend>
+            <!--[if ENDBLOCK]><![endif]-->
+
+            
+            <!--[if BLOCK]><![endif]-->                <progress max="100" :value="progress" :class="!processing &amp;&amp; 'hidden'" class="progress h-1 absolute -mt-2 w-56 hidden"></progress>
+            <!--[if ENDBLOCK]><![endif]-->
+
+            
+            <input id="mary16281ac7d58bec456f2c8ae17c496e41" type="file" x-ref="file" @change="refreshImage()" class="file-input w-full" wire:model="pdfFiles" accept=".pdf" multiple="multiple" wire:loading.class="opacity-50" wire:target="pdfFiles">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            
+            <!--[if BLOCK]><![endif]-->                <div class="fieldset-label" x-classes="fieldset-label">Format: PDF. Maksimal 10MB per file. Bisa upload multiple files sekaligus.</div>
+            <!--[if ENDBLOCK]><![endif]-->
+        </fieldset>
+    </div>            </div>
+
+    <!--[if BLOCK]><![endif]-->        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10 my-3">
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <div class="flex justify-end gap-3">
+            <button wire:key="maryb6ee1150a0e7d83aa4eebb41b8715424" type="button" wire:click="closeUploadModal" class="btn btn-ghost">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+        
+        <!-- LABEL / SLOT -->
+                    <span class="">
+                Batal
+            </span>
+                    
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                    <button wire:key="mary0f0830334e59d8f8b2524891d734a926" type="submit" wire:loading.attr="disabled" wire:target="uploadDocuments" class="btn btn-primary">
+
+        <!-- SPINNER LEFT -->
+                    <span wire:loading="" wire:target="uploadDocuments" class="loading loading-spinner w-5 h-5"></span>
+        
+        <!-- ICON -->
+                    <span class="block" wire:loading.class="hidden" wire:target="uploadDocuments">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    <span class="">
+                Upload Dokumen
+            </span>
+                    
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+        </div>
+    <!--[if ENDBLOCK]><![endif]-->
+</form>
+        </div>
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+    </div>
+
+    <!--[if BLOCK]><![endif]-->        <form class="modal-backdrop" method="dialog">
+            <!--[if BLOCK]><![endif]-->                <button @click="$wire.showUploadModal = false" type="button">close</button>
+            <!--[if ENDBLOCK]><![endif]-->
+        </form>
+    <!--[if ENDBLOCK]><![endif]-->
+</dialog>
+    
+    <div x-data="{
+            open:
+                                    window.Livewire.find('Wy3Ihu749RqqLZ20l82s').entangle('drawer')                            ,
+            close() {
+                this.open = false
+                $refs.checkbox.checked = false
+            }
+        }" x-init="$watch('open', value =&gt; { if (!value){ $dispatch('close') }else{ $dispatch('open') } })" x-trap="open" x-bind:inert="!open" class="drawer absolute z-50 drawer-end" inert="inert">
+        <!-- Toggle visibility  -->
+        <input id="drawer" x-model="open" x-ref="checkbox" type="checkbox" class="drawer-toggle">
+
+        <div class="drawer-side">
+            <!-- Overlay effect , click outside -->
+            <label for="drawer" class="drawer-overlay"></label>
+
+            <!-- Content -->
+            <div class="card bg-base-100 rounded-lg p-5 min-h-screen rounded-none px-8 w-11/12 lg:w-1/3" wire:key="drawer-card">
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]-->            <div class="pb-5">
+                <div class="flex gap-3 justify-between items-center w-full">
+                    <div class="grow-1">
+                        <!--[if BLOCK]><![endif]-->                            <div class="text-xl font-bold ">
+                                Filter Dokumen AWB
+                            </div>
+                        <!--[if ENDBLOCK]><![endif]-->
+                        <!--[if BLOCK]><![endif]-->                        <div class="text-base-content/50 text-sm mt-1 ">
+                                Sesuaikan pencarian Anda
+                            </div>
+                        <!--[if ENDBLOCK]><![endif]-->
+                    </div>
+
+                    <!--[if BLOCK]><![endif]-->                        <div class="flex items-center gap-2"> <button wire:key="maryeb7dfc4cd6dac92d14eead70d278ee4b" type="button" @click="close()" class="btn btn-ghost btn-sm btn-circle">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button> </div>
+                    <!--[if ENDBLOCK]><![endif]-->
+                </div>
+
+                <!--[if BLOCK]><![endif]-->                    <hr class="mt-3 border-t-[length:var(--border)] border-base-content/10">
+
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                <!--[if ENDBLOCK]><![endif]-->
+            </div>
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <div class="grow-1 null">
+            <!--[if BLOCK]><![endif]-->                                     <!--[if ENDBLOCK]><![endif]-->
+
+                <div class="space-y-6">
+            <div>
+    
+    <fieldset class="fieldset py-0">
+        
+        <!--[if BLOCK]><![endif]-->            <legend class="fieldset-legend mb-0.5">
+                Pencarian
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </legend>
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <label class="">
+            
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <div class="w-full">
+                
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                
+                <label class="input w-full">
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]-->                        <svg class="inline flex-shrink-0 pointer-events-none w-4 h-4 opacity-40" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"></path>
+</svg>
+                        <!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                        
+                        <input id="marybdcaccb6f6df279567e68b087632ddb2search" placeholder="Cari berdasarkan kode AWB atau deskripsi... " type="text" wire:model.live.debounce.300ms="search">
+
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                </label>
+
+                
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+        </label>
+
+        
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+    </fieldset>
+</div>
+            <div x-data="{ focused: false, selection: window.Livewire.find('Wy3Ihu749RqqLZ20l82s').entangle('platform_filter').live }">
+        <div @click.outside="clear()" @keyup.esc="clear()" x-data="{
+                options: [{&quot;id&quot;:1,&quot;name&quot;:&quot;TOKOPEDIA&quot;},{&quot;id&quot;:2,&quot;name&quot;:&quot;SHOPEE&quot;},{&quot;id&quot;:3,&quot;name&quot;:&quot;LAZADA&quot;},{&quot;id&quot;:4,&quot;name&quot;:&quot;TIKTOK SHOP&quot;},{&quot;id&quot;:5,&quot;name&quot;:&quot;SOSCOM&quot;},{&quot;id&quot;:6,&quot;name&quot;:&quot;REGULAR&quot;}],
+                isSingle: true,
+                isSearchable: false,
+                isReadonly: false,
+                isDisabled: false,
+                isRequired: false,
+                minChars: 0,
+
+                init() {
+                    // Fix weird issue when navigating back
+                    document.addEventListener('livewire:navigating', () =&gt; {
+                        let elements = document.querySelectorAll('.mary-choices-element');
+                        elements.forEach(el =&gt;  el.remove());
+                    });
+                },
+                get selectedOptions() {
+                    return this.isSingle
+                        ? this.options.filter(i =&gt; i.id == this.selection)
+                        : this.selection.map(i =&gt; this.options.filter(o =&gt; o.id == i)[0])
+                },
+                get noResults() {
+                    if (!this.isSearchable || this.$refs.searchInput.value == '') {
+                        return false
+                    }
+
+                    return this.isSingle
+                            ? (this.selection &amp;&amp; this.options.length  == 1) || (!this.selection &amp;&amp; this.options.length == 0)
+                            : this.options.length &lt;= this.selection.length
+                },
+                get isAllSelected() {
+                    return this.options.length == this.selection.length
+                },
+                get isSelectionEmpty() {
+                    return this.isSingle
+                        ? this.selection == null || this.selection == ''
+                        : this.selection.length == 0
+                },
+                selectAll() {
+                    this.selection = this.options.map(i =&gt; i.id)
+                    this.dispatchChangeEvent({ value: this.selection })
+                },
+                clear() {
+                    this.focused = false;
+                    this.$refs.searchInput.value = ''
+                },
+                reset() {
+                    this.clear();
+                    this.isSingle
+                        ? this.selection = null
+                        : this.selection = []
+
+                    this.dispatchChangeEvent({ value: this.selection})
+                },
+                focus() {
+                    if (this.isReadonly || this.isDisabled) {
+                        return
+                    }
+
+                    this.focused = true
+                    this.$refs.searchInput.focus()
+                },
+                resize() {
+                    $refs.searchInput.style.width = ($refs.searchInput.value.length + 1) * 0.55 + 'rem'
+                },
+                isActive(id) {
+                    return this.isSingle
+                        ? this.selection == id
+                        : this.selection.includes(id)
+                },
+                toggle(id, keepOpen = false) {
+                    if (this.isReadonly || this.isDisabled) {
+                        return
+                    }
+
+                    if (this.isSingle) {
+                        this.selection = id
+                        this.focused = false
+                    } else {
+                        this.selection.includes(id)
+                            ? this.selection = this.selection.filter(i =&gt; i != id)
+                            : this.selection.push(id)
+                    }
+
+                    this.dispatchChangeEvent({ value: this.selection })
+
+                    this.$refs.searchInput.value = ''
+
+                    if (!keepOpen) {
+                        this.$refs.searchInput.focus()
+                    }
+
+                },
+                search(value, event) {
+                    if (value.length &lt; this.minChars) {
+                        return
+                    }
+
+                    // Prevent search for this keys
+                    if (event &amp;&amp; ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Shift', 'CapsLock', 'Tab',
+                                  'Control', 'Alt', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) {
+                        return;
+                    }
+
+                    // Call search function from parent component
+                    // `search(value)` or `search(value, extra1, extra2 ...)`
+                    window.Livewire.find('Wy3Ihu749RqqLZ20l82s').searchPlatforms(value).then(()=&gt; this.resize())
+                },
+                dispatchChangeEvent(detail) {
+                    this.$refs.searchInput.dispatchEvent(new CustomEvent('change-selection', { bubbles: true, detail }))
+                }
+            }" @keydown.up="$focus.previous()" @keydown.down="$focus.next()">
+            <fieldset class="fieldset py-0">
+                
+                <!--[if BLOCK]><![endif]-->                    <legend class="fieldset-legend mb-0.5">
+                        Platform
+
+                        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                    </legend>
+                <!--[if ENDBLOCK]><![endif]-->
+
+                <label class="">
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    <div class="w-full">
+                        
+                        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                        
+                        <label x-ref="container" @click="focus()" class="select w-full min-h-[var(--size)] h-auto pl-2.5">
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            <div class="w-full py-0.5 min-h-3 content-center text-wrap">
+
+                                
+                                <span wire:key="selected-options-maryb1f445927a987e19fdaec609ce98f86a">
+                                    <!--[if BLOCK]><![endif]-->                                        <template x-for="(option, index) in selectedOptions" :key="index">
+                                            <span class="mary-choices-element cursor-pointer badge badge-soft m-0.5 !inline-block !h-auto">
+                                                
+                                                <!--[if BLOCK]><![endif]-->                                                    <span x-text="option?.name"></span>
+                                                <!--[if ENDBLOCK]><![endif]-->
+
+                                                <!--[if BLOCK]><![endif]-->                                                    <svg @click="toggle(option.id)" x-show="!isReadonly &amp;&amp; !isDisabled &amp;&amp; !isSingle" class="inline flex-shrink-0 w-4 h-4 hover:text-error" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+</svg>
+                                                    <!--[if ENDBLOCK]><![endif]-->
+                                            </span>
+                                        </template>
+                                    <!--[if ENDBLOCK]><![endif]-->
+                                </span>
+
+                                
+                                <span :class="(focused || !isSelectionEmpty) &amp;&amp; 'hidden'" class="text-base-content/40">
+                                    Pilih Platform
+                                </span>
+
+                                
+                                <input x-ref="searchInput" @input="focus(); resize();" @keydown.arrow-down.prevent="focus()" :required="isRequired &amp;&amp; isSelectionEmpty" class="w-1 !inline-block outline-hidden" readonly="">
+                            </div>
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </label>
+
+                        
+                        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                    </div>
+                </label>
+
+                
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </fieldset>
+
+            
+            <div x-show="focused" class="relative" wire:key="options-list-main-maryb1f445927a987e19fdaec609ce98f86a" style="display: none;">
+                <div wire:key="options-list-maryb1f445927a987e19fdaec609ce98f86a" class="max-h-64 w-full absolute z-10 shadow-xl bg-base-100 border border-base-content/10 rounded-lg cursor-pointer overflow-y-auto" x-anchor.bottom-start="$refs.container" style="left: -5px; top: 281px; position: absolute;">
+
+                    
+                    <progress wire:loading="" wire:target="searchPlatforms" class="progress absolute top-0 h-0.5"></progress>
+
+                   
+                   <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <div x-show="noResults" wire:key="no-results-1589057662" class="p-3 decoration-wavy decoration-warning underline font-bold border border-s-4 border-s-warning border-b-base-200" style="display: none;">
+                        No results found.
+                    </div>
+
+                    <!--[if BLOCK]><![endif]-->                        <div wire:key="option-1" @click="toggle(1, true)" @keydown.enter="toggle(1, true)" :class="isActive(1) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary6ff43a15809009b44532412bb83ec32c">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        TOKOPEDIA
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-2" @click="toggle(2, true)" @keydown.enter="toggle(2, true)" :class="isActive(2) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary616469b39f9d9a87f62ea9033167bc10">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        SHOPEE
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-3" @click="toggle(3, true)" @keydown.enter="toggle(3, true)" :class="isActive(3) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary4ef72b86b10f664819b201c9253e8d9c">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        LAZADA
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-4" @click="toggle(4, true)" @keydown.enter="toggle(4, true)" :class="isActive(4) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary73d876b85db2b871643c59c9bc284703">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        TIKTOK SHOP
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-5" @click="toggle(5, true)" @keydown.enter="toggle(5, true)" :class="isActive(5) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="maryf79b6ba9603968abd9e547c5efa50522">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        SOSCOM
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-6" @click="toggle(6, true)" @keydown.enter="toggle(6, true)" :class="isActive(6) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary904247911e1c1af8cfcbc50b3ba387b9">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        REGULAR
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    <!--[if ENDBLOCK]><![endif]-->
+                </div>
+            </div>
+        </div>
+    </div>        </div>
+
+                <!--[if BLOCK]><![endif]-->                                     <!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <!--[if BLOCK]><![endif]-->                <hr class="mt-5 border-t-[length:var(--border)] border-base-content/10">
+            <!--[if ENDBLOCK]><![endif]-->
+
+            <div class="flex w-full items-end justify-end gap-3 pt-5 ">
+                <button wire:key="mary37b3b6e0277f59adb623f94852491ae3" type="button" wire:click="clearFilters" class="btn btn-outline">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+        
+        <!-- LABEL / SLOT -->
+                    <span class="">
+                Bersihkan
+            </span>
+                    
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                <button wire:key="maryace81cca7aaed5ed8317abbed95a09d5" type="button" wire:click="applyFilters" class="btn btn-primary">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+        
+        <!-- LABEL / SLOT -->
+                    <span class="">
+                Terapkan
+            </span>
+                    
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+            </div>
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>        </div>
+    </div>
+    
+    <dialog class="modal backdrop-blur" x-data="{open: window.Livewire.find('Wy3Ihu749RqqLZ20l82s').entangle('deleteModal').live }" x-init="$watch('open', value =&gt; { if (!value){ $dispatch('close') }else{ $dispatch('open') } })" :class="{'modal-open !animate-none': open}" :open="open" @keydown.escape.window="$wire.deleteModal = false" x-trap="open" x-bind:inert="!open" inert="inert">
+    <div class="modal-box ">
+        <!--[if BLOCK]><![endif]-->            <form method="dialog" tabindex="-1">
+                <!--[if BLOCK]><![endif]-->                    <button wire:key="maryeb7dfc4cd6dac92d14eead70d278ee4b" type="button" @click="$wire.deleteModal = false" tabindex="-1" class="btn btn-circle btn-sm btn-ghost absolute end-2 top-2 z-[999]">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                    <!--[if ENDBLOCK]><![endif]-->
+            </form>
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]-->            <div id="konfirmasi-hapus" class="mb-10 !mb-5">
+    <div class="flex flex-wrap gap-5 justify-between items-center">
+        <div>
+            <div class="flex items-center text-xl font-extrabold ">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <span class="">Konfirmasi Hapus</span>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <div class="flex items-center gap-3 ">
+            
+        </div>
+    </div>
+
+    <!--[if BLOCK]><![endif]-->        <hr class="border-t-[length:var(--border)] border-base-content/10 mt-3">
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+    <!--[if ENDBLOCK]><![endif]-->
+</div>        <!--[if ENDBLOCK]><![endif]-->
+
+        <div>
+            <p class="mb-3">Apakah Anda yakin ingin menghapus dokumen AWB ini?</p>
+        <p class="mb-5 text-sm text-gray-500">Tindakan ini tidak dapat dibatalkan dan akan menghapus dokumen secara
+            permanen.</p>
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10 mt-5">
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]-->            <div class="modal-action">
+                <button wire:key="maryb6ee1150a0e7d83aa4eebb41b8715424" type="button" @click="$wire.deleteModal = false; $wire.idToDelete = null" class="btn btn-neutral">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+        
+        <!-- LABEL / SLOT -->
+                    <span class="">
+                Batal
+            </span>
+                    
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                <button wire:key="mary06e0c05371c7803beb5ebacf0378c078" type="button" wire:click="deleteDocument" wire:loading.attr="disabled" wire:target="deleteDocument" class="btn btn-error">
+
+        <!-- SPINNER LEFT -->
+                    <span wire:loading="" wire:target="deleteDocument" class="loading loading-spinner w-5 h-5"></span>
+        
+        <!-- ICON -->
+                    <span class="block" wire:loading.class="hidden" wire:target="deleteDocument">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    <span class="">
+                Hapus
+            </span>
+                    
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+            </div>
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>
+
+    <!--[if BLOCK]><![endif]-->        <form class="modal-backdrop" method="dialog">
+            <!--[if BLOCK]><![endif]-->                <button @click="$wire.deleteModal = false" type="button">close</button>
+            <!--[if ENDBLOCK]><![endif]-->
+        </form>
+    <!--[if ENDBLOCK]><![endif]-->
+</dialog>
+    
+    <dialog class="modal backdrop-blur" x-data="{open: window.Livewire.find('Wy3Ihu749RqqLZ20l82s').entangle('showEditModal').live }" x-init="$watch('open', value =&gt; { if (!value){ $dispatch('close') }else{ $dispatch('open') } })" :class="{'modal-open !animate-none': open}" :open="open" @keydown.escape.window="$wire.showEditModal = false" x-trap="open" x-bind:inert="!open" inert="inert">
+    <div class="modal-box ">
+        <!--[if BLOCK]><![endif]-->            <form method="dialog" tabindex="-1">
+                <!--[if BLOCK]><![endif]-->                    <button wire:key="maryeb7dfc4cd6dac92d14eead70d278ee4b" type="button" @click="$wire.showEditModal = false" tabindex="-1" class="btn btn-circle btn-sm btn-ghost absolute end-2 top-2 z-[999]">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+                    <span class="block">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    
+        
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                    <!--[if ENDBLOCK]><![endif]-->
+            </form>
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]-->            <div id="edit-dokumen-awb" class="mb-10 !mb-5">
+    <div class="flex flex-wrap gap-5 justify-between items-center">
+        <div>
+            <div class="flex items-center text-xl font-extrabold ">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <span class="">Edit Dokumen AWB</span>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <div class="flex items-center gap-3 ">
+            
+        </div>
+    </div>
+
+    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+</div>        <!--[if ENDBLOCK]><![endif]-->
+
+        <div>
+            <form wire:submit="updateDocument" class="grid grid-flow-row auto-rows-min gap-3">
+
+    <div class="space-y-4">
+                <div x-data="{ focused: false, selection: window.Livewire.find('Wy3Ihu749RqqLZ20l82s').entangle('editPlatformId') }">
+        <div @click.outside="clear()" @keyup.esc="clear()" x-data="{
+                options: [{&quot;id&quot;:1,&quot;name&quot;:&quot;TOKOPEDIA&quot;},{&quot;id&quot;:2,&quot;name&quot;:&quot;SHOPEE&quot;},{&quot;id&quot;:3,&quot;name&quot;:&quot;LAZADA&quot;},{&quot;id&quot;:4,&quot;name&quot;:&quot;TIKTOK SHOP&quot;},{&quot;id&quot;:5,&quot;name&quot;:&quot;SOSCOM&quot;},{&quot;id&quot;:6,&quot;name&quot;:&quot;REGULAR&quot;}],
+                isSingle: true,
+                isSearchable: false,
+                isReadonly: false,
+                isDisabled: false,
+                isRequired: false,
+                minChars: 0,
+
+                init() {
+                    // Fix weird issue when navigating back
+                    document.addEventListener('livewire:navigating', () =&gt; {
+                        let elements = document.querySelectorAll('.mary-choices-element');
+                        elements.forEach(el =&gt;  el.remove());
+                    });
+                },
+                get selectedOptions() {
+                    return this.isSingle
+                        ? this.options.filter(i =&gt; i.id == this.selection)
+                        : this.selection.map(i =&gt; this.options.filter(o =&gt; o.id == i)[0])
+                },
+                get noResults() {
+                    if (!this.isSearchable || this.$refs.searchInput.value == '') {
+                        return false
+                    }
+
+                    return this.isSingle
+                            ? (this.selection &amp;&amp; this.options.length  == 1) || (!this.selection &amp;&amp; this.options.length == 0)
+                            : this.options.length &lt;= this.selection.length
+                },
+                get isAllSelected() {
+                    return this.options.length == this.selection.length
+                },
+                get isSelectionEmpty() {
+                    return this.isSingle
+                        ? this.selection == null || this.selection == ''
+                        : this.selection.length == 0
+                },
+                selectAll() {
+                    this.selection = this.options.map(i =&gt; i.id)
+                    this.dispatchChangeEvent({ value: this.selection })
+                },
+                clear() {
+                    this.focused = false;
+                    this.$refs.searchInput.value = ''
+                },
+                reset() {
+                    this.clear();
+                    this.isSingle
+                        ? this.selection = null
+                        : this.selection = []
+
+                    this.dispatchChangeEvent({ value: this.selection})
+                },
+                focus() {
+                    if (this.isReadonly || this.isDisabled) {
+                        return
+                    }
+
+                    this.focused = true
+                    this.$refs.searchInput.focus()
+                },
+                resize() {
+                    $refs.searchInput.style.width = ($refs.searchInput.value.length + 1) * 0.55 + 'rem'
+                },
+                isActive(id) {
+                    return this.isSingle
+                        ? this.selection == id
+                        : this.selection.includes(id)
+                },
+                toggle(id, keepOpen = false) {
+                    if (this.isReadonly || this.isDisabled) {
+                        return
+                    }
+
+                    if (this.isSingle) {
+                        this.selection = id
+                        this.focused = false
+                    } else {
+                        this.selection.includes(id)
+                            ? this.selection = this.selection.filter(i =&gt; i != id)
+                            : this.selection.push(id)
+                    }
+
+                    this.dispatchChangeEvent({ value: this.selection })
+
+                    this.$refs.searchInput.value = ''
+
+                    if (!keepOpen) {
+                        this.$refs.searchInput.focus()
+                    }
+
+                },
+                search(value, event) {
+                    if (value.length &lt; this.minChars) {
+                        return
+                    }
+
+                    // Prevent search for this keys
+                    if (event &amp;&amp; ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Shift', 'CapsLock', 'Tab',
+                                  'Control', 'Alt', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) {
+                        return;
+                    }
+
+                    // Call search function from parent component
+                    // `search(value)` or `search(value, extra1, extra2 ...)`
+                    window.Livewire.find('Wy3Ihu749RqqLZ20l82s').searchPlatforms(value).then(()=&gt; this.resize())
+                },
+                dispatchChangeEvent(detail) {
+                    this.$refs.searchInput.dispatchEvent(new CustomEvent('change-selection', { bubbles: true, detail }))
+                }
+            }" @keydown.up="$focus.previous()" @keydown.down="$focus.next()">
+            <fieldset class="fieldset py-0">
+                
+                <!--[if BLOCK]><![endif]-->                    <legend class="fieldset-legend mb-0.5">
+                        Platform
+
+                        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                    </legend>
+                <!--[if ENDBLOCK]><![endif]-->
+
+                <label class="">
+                    
+                    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    <div class="w-full">
+                        
+                        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                        
+                        <label x-ref="container" @click="focus()" class="select w-full min-h-[var(--size)] h-auto pl-2.5">
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            <div class="w-full py-0.5 min-h-3 content-center text-wrap">
+
+                                
+                                <span wire:key="selected-options-maryb1f445927a987e19fdaec609ce98f86a">
+                                    <!--[if BLOCK]><![endif]-->                                        <template x-for="(option, index) in selectedOptions" :key="index">
+                                            <span class="mary-choices-element cursor-pointer badge badge-soft m-0.5 !inline-block !h-auto">
+                                                
+                                                <!--[if BLOCK]><![endif]-->                                                    <span x-text="option?.name"></span>
+                                                <!--[if ENDBLOCK]><![endif]-->
+
+                                                <!--[if BLOCK]><![endif]-->                                                    <svg @click="toggle(option.id)" x-show="!isReadonly &amp;&amp; !isDisabled &amp;&amp; !isSingle" class="inline flex-shrink-0 w-4 h-4 hover:text-error" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+</svg>
+                                                    <!--[if ENDBLOCK]><![endif]-->
+                                            </span>
+                                        </template>
+                                    <!--[if ENDBLOCK]><![endif]-->
+                                </span>
+
+                                
+                                <span :class="(focused || !isSelectionEmpty) &amp;&amp; 'hidden'" class="text-base-content/40">
+                                    Pilih Platform (opsional)
+                                </span>
+
+                                
+                                <input x-ref="searchInput" @input="focus(); resize();" @keydown.arrow-down.prevent="focus()" :required="isRequired &amp;&amp; isSelectionEmpty" class="w-1 !inline-block outline-hidden" readonly="">
+                            </div>
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </label>
+
+                        
+                        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                    </div>
+                </label>
+
+                
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </fieldset>
+
+            
+            <div x-show="focused" class="relative" wire:key="options-list-main-maryb1f445927a987e19fdaec609ce98f86a" style="display: none;">
+                <div wire:key="options-list-maryb1f445927a987e19fdaec609ce98f86a" class="max-h-64 w-full absolute z-10 shadow-xl bg-base-100 border border-base-content/10 rounded-lg cursor-pointer overflow-y-auto" x-anchor.bottom-start="$refs.container" style="left: 419.6px; top: 313.45px; position: absolute;">
+
+                    
+                    <progress wire:loading="" wire:target="searchPlatforms" class="progress absolute top-0 h-0.5"></progress>
+
+                   
+                   <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <div x-show="noResults" wire:key="no-results-704263425" class="p-3 decoration-wavy decoration-warning underline font-bold border border-s-4 border-s-warning border-b-base-200" style="display: none;">
+                        No results found.
+                    </div>
+
+                    <!--[if BLOCK]><![endif]-->                        <div wire:key="option-1" @click="toggle(1, true)" @keydown.enter="toggle(1, true)" :class="isActive(1) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary6ff43a15809009b44532412bb83ec32c">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        TOKOPEDIA
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-2" @click="toggle(2, true)" @keydown.enter="toggle(2, true)" :class="isActive(2) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary616469b39f9d9a87f62ea9033167bc10">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        SHOPEE
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-3" @click="toggle(3, true)" @keydown.enter="toggle(3, true)" :class="isActive(3) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary4ef72b86b10f664819b201c9253e8d9c">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        LAZADA
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-4" @click="toggle(4, true)" @keydown.enter="toggle(4, true)" :class="isActive(4) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary73d876b85db2b871643c59c9bc284703">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        TIKTOK SHOP
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-5" @click="toggle(5, true)" @keydown.enter="toggle(5, true)" :class="isActive(5) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="maryf79b6ba9603968abd9e547c5efa50522">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        SOSCOM
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                                            <div wire:key="option-6" @click="toggle(6, true)" @keydown.enter="toggle(6, true)" :class="isActive(6) &amp;&amp; 'border-s-4 border-s-base-content'" class="border-s-4 border-base-content/10 focus:bg-base-200 focus:outline-none" tabindex="0">
+                            
+                            <!--[if BLOCK]><![endif]-->                                <div wire:key="mary904247911e1c1af8cfcbc50b3ba387b9">
+        <div class="flex justify-start items-center gap-4 px-3 hover:bg-base-200">
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- AVATAR -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <!-- CONTENT -->
+            <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis truncate w-0 mary-hideable">
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+                <div class="py-3">
+                    <div class="font-semibold truncate">
+                        REGULAR
+                    </div>
+
+                    <div class="text-base-content/50 text-sm truncate">
+                        
+                    </div>
+                </div>
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </div>
+
+            <!-- ACTION -->
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+        </div>
+
+        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10">
+        <!--[if ENDBLOCK]><![endif]-->
+    </div>                            <!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    <!--[if ENDBLOCK]><![endif]-->
+                </div>
+            </div>
+        </div>
+    </div>
+                <div>
+    
+    <fieldset class="fieldset py-0">
+        
+        <!--[if BLOCK]><![endif]-->            <legend class="fieldset-legend mb-0.5">
+                Deskripsi
+
+                <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+            </legend>
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <label class="">
+            
+            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+            <div class="w-full">
+                
+                <textarea placeholder="Deskripsi dokumen (opsional) " class="textarea w-full" id="mary56819e62afad424ab68ec5e87de04b9beditDescription" wire:model="editDescription" rows="3" icon="o-document-text"></textarea>
+            </div>
+        </label>
+
+        
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+    </fieldset>
+</div>            </div>
+
+    <!--[if BLOCK]><![endif]-->        <!--[if BLOCK]><![endif]-->            <hr class="border-t-[length:var(--border)] border-base-content/10 my-3">
+        <!--[if ENDBLOCK]><![endif]-->
+
+        <div class="flex justify-end gap-3">
+            <button wire:key="maryb6ee1150a0e7d83aa4eebb41b8715424" type="button" wire:click="closeEditModal" class="btn btn-ghost">
+
+        <!-- SPINNER LEFT -->
+        
+        <!-- ICON -->
+        
+        <!-- LABEL / SLOT -->
+                    <span class="">
+                Batal
+            </span>
+                    
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+                    <button wire:key="mary8485661de46efd4f15cb83d15023f930" type="submit" wire:loading.attr="disabled" wire:target="updateDocument" class="btn btn-primary">
+
+        <!-- SPINNER LEFT -->
+                    <span wire:loading="" wire:target="updateDocument" class="loading loading-spinner w-5 h-5"></span>
+        
+        <!-- ICON -->
+                    <span class="block" wire:loading.class="hidden" wire:target="updateDocument">
+                <svg class="inline flex-shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"></path>
+</svg>
+                </span>
+        
+        <!-- LABEL / SLOT -->
+                    <span class="">
+                Simpan Perubahan
+            </span>
+                    
+        <!-- ICON RIGHT -->
+        
+        <!-- SPINNER RIGHT -->
+        
+            </button>
+        </div>
+    <!--[if ENDBLOCK]><![endif]-->
+</form>
+        </div>
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+    </div>
+
+    <!--[if BLOCK]><![endif]-->        <form class="modal-backdrop" method="dialog">
+            <!--[if BLOCK]><![endif]-->                <button @click="$wire.showEditModal = false" type="button">close</button>
+            <!--[if ENDBLOCK]><![endif]-->
+        </form>
+    <!--[if ENDBLOCK]><![endif]-->
+</dialog></div>
+        </div>
+
+        
+                    <div x-data="{
+                    collapsed: false,
+                    collapseText: 'Sembunyikan',
+                    toggle() {
+                        this.collapsed = !this.collapsed;
+                        fetch('/mary/toogle-sidebar?collapsed=' + this.collapsed);
+                        this.$dispatch('sidebar-toggled', this.collapsed);
+                    }
+                }" @menu-sub-clicked="if(collapsed) { toggle() }" class="drawer-side z-20 lg:z-auto top-0 lg:top-[65px] lg:h-[calc(100vh-65px)]">
+                <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+
+                
+                <div :class="collapsed
+                        ? '!w-[62px] [&amp;&gt;*_summary::after]:!hidden [&amp;_.mary-hideable]:!hidden [&amp;_.display-when-collapsed]:!block [&amp;_.hidden-when-collapsed]:!hidden'
+                        : '!w-[270px] [&amp;&gt;*_summary::after]:!block [&amp;_.mary-hideable]:!block [&amp;_.hidden-when-collapsed]:!block [&amp;_.display-when-collapsed]:!hidden'" class="flex flex-col !transition-all !duration-100 ease-out overflow-x-hidden overflow-y-auto h-screen w-[270px] [&amp;&gt;*_summary::after]:block [&amp;_.mary-hideable]:block [&amp;_.hidden-when-collapsed]:block [&amp;_.display-when-collapsed]:hidden lg:h-[calc(100vh-65px)] bg-base-100 !w-[270px] [&amp;&gt;*_summary::after]:!block [&amp;_.mary-hideable]:!block [&amp;_.hidden-when-collapsed]:!block [&amp;_.display-when-collapsed]:!hidden" drawer="main-drawer" collapsible="collapsible">
+                    <div class="flex-1">
+                        <ul class="menu w-full">
+        
+        
+        <div>
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/home" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,120v96a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V164a4,4,0,0,0-4-4H108a4,4,0,0,0-4,4v52a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V120a16,16,0,0,1,4.69-11.31l80-80a16,16,0,0,1,22.62,0l80,80A16,16,0,0,1,224,120Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Dashboard
+
+                                                </span>
+                    </a>
+    </li>
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap mary-active-menu bg-base-300" href="https://winninghousefulfillment.com/client/awb-documents" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,176H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm-8-56V44l44,44Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    AWB Upload
+
+                                                </span>
+                    </a>
+    </li>
+    <hr class="my-3 border-t-[length:var(--border)] border-base-content/10">
+
+    
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/client/product-categories" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63ZM84,96A12,12,0,1,1,96,84,12,12,0,0,1,84,96Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Kategori Produk
+
+                                                </span>
+                    </a>
+    </li>
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/client/products" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,120,47.65,76,128,32l80.35,44Zm8,99.64V133.83l80-43.78v85.76Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Produk SKU
+
+                                                </span>
+                    </a>
+    </li>
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/client/product-items" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,120,47.65,76,128,32l80.35,44Zm8,99.64V133.83l80-43.78v85.76Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Produk Item
+
+                                                </span>
+                    </a>
+    </li>
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/client/summary" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1,0-16h8V136a8,8,0,0,1,8-8H72a8,8,0,0,1,8,8v64H96V88a8,8,0,0,1,8-8h32a8,8,0,0,1,8,8V200h16V40a8,8,0,0,1,8-8h40a8,8,0,0,1,8,8V200h8A8,8,0,0,1,232,208Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Summary
+
+                                                </span>
+                    </a>
+    </li>
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/client/reports" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,176H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm-8-56V44l44,44Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Report Pengiriman
+
+                                                </span>
+                    </a>
+    </li>
+    <hr class="my-3 border-t-[length:var(--border)] border-base-content/10">
+
+    
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/client/inbounds" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,120,47.65,76,128,32l80.35,44Zm8,99.64V133.83l80-43.78v85.76Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Inbound
+
+                                                </span>
+                    </a>
+    </li>
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/client/outbounds" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,120,47.65,76,128,32l80.35,44Zm8,99.64V133.83l80-43.78v85.76Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Outbound
+
+                                                </span>
+                    </a>
+    </li>
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/client/return-to-senders" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,120,47.65,76,128,32l80.35,44Zm8,99.64V133.83l80-43.78v85.76Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Return to Senders
+
+                                                </span>
+                    </a>
+    </li>
+    <hr class="my-3 border-t-[length:var(--border)] border-base-content/10">
+
+    
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/client/export-excel" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,176H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm-8-56V44l44,44Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Export Excel
+
+                                                </span>
+                    </a>
+    </li>
+    <hr class="my-3 border-t-[length:var(--border)] border-base-content/10">
+
+    
+    <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" href="https://winninghousefulfillment.com/client/users" wire:navigate="">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"></path></svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    User
+
+                                                </span>
+                    </a>
+    </li>
+</div>
+    </ul>
+                    </div>
+
+                     
+                                        <ul class="menu w-full hidden lg:block">
+        
+        
+        <li class="">
+        <a class="my-0.5 py-1.5 px-4 hover:text-inherit whitespace-nowrap" @click="toggle">
+            
+            
+                            <span class="block py-0.5">
+                    <svg class="inline flex-shrink-0 w-5 h-5 mb-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M12 17.25h8.25"></path>
+</svg>
+                    </span>
+            
+                        <span class="mary-hideable whitespace-nowrap truncate">
+                                    Sembunyikan
+
+                                                </span>
+                    </a>
+    </li>
+    </ul>                                    </div>
+            </div>
+                
+
+    </div>
+</main>
+
+ 
+ 
+    <div>
+    <div x-persist="mary-toaster">
+    <div x-data="{ show: false, timer: '', toast: ''}" @mary-toast.window="
+                        clearTimeout(timer);
+                        toast = $event.detail.toast
+                        setTimeout(() =&gt; show = true, 100);
+                        timer = setTimeout(() =&gt; show = false, $event.detail.toast.timeout);
+                        ">
+        <div class="toast !whitespace-normal rounded-md fixed cursor-pointer z-[999] toast-top toast-end" :class="toast.position || 'toast-top toast-end'" x-show="show" x-classes="alert alert-success alert-warning alert-error alert-info top-10 end-10 toast toast-top toast-bottom toast-center toast-end toast-middle toast-start" @click="show = false" style="display: none;">
+            <div class="alert gap-2" :class="toast.css">
+                <div x-html="toast.icon" class="hidden sm:inline-block">undefined</div>
+                <div class="grid">
+                    <div x-html="toast.title" class="font-bold">undefined</div>
+                    <div x-html="toast.description" class="text-xs">undefined</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.toast = function(payload){
+            window.dispatchEvent(new CustomEvent('mary-toast', {detail: payload}))
+        }
+
+        document.addEventListener('livewire:init', () => {
+            Livewire.hook('request', ({fail}) => {
+                fail(({status, content, preventDefault}) => {
+                    try {
+                        let result = JSON.parse(content);
+
+                        if (result?.toast && typeof window.toast === "function") {
+                            window.toast(result);
+                        }
+
+                        if ((result?.prevent_default ?? false) === true) {
+                            preventDefault();
+                        }
+                    } catch (e) {
+                        console.log(e)
+                    }
+                })
+            })
+        })
+    </script>
+    </div>
+</div>    <div>
+        <label for="mary71170d36f8f1f31c2bdeff5de820e2d7" x-data="{
+                theme: $persist(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'wms-dark' : 'wms-light').as('mary-theme'),
+                class: $persist(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light').as('mary-class'),
+                init() {
+                    if (this.theme == 'wms-dark') {
+                        this.$refs.sun.classList.add('swap-off');
+                        this.$refs.sun.classList.remove('swap-on');
+                        this.$refs.moon.classList.add('swap-on');
+                        this.$refs.moon.classList.remove('swap-off');
+                    }
+                    this.setToggle()
+                },
+                setToggle() {
+                    document.documentElement.setAttribute('data-theme', this.theme)
+                    document.documentElement.setAttribute('class', this.class)
+                    this.$dispatch('theme-changed', this.theme)
+                    this.$dispatch('theme-changed-class', this.class)
+                },
+                toggle() {
+                    this.theme = this.theme == 'wms-light' ? 'wms-dark' : 'wms-light'
+                    this.class = this.theme == 'wms-light' ? 'light' : 'dark'
+                    this.setToggle()
+                }
+            }" @mary-toggle-theme.window="toggle()" class="swap swap-rotate hidden">
+            <input id="mary71170d36f8f1f31c2bdeff5de820e2d7" type="checkbox" class="theme-controller opacity-0" @click="toggle()" :value="theme" value="wms-light">
+            <svg x-ref="sun" class="inline flex-shrink-0 w-5 h-5 swap-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"></path>
+</svg>
+                <svg x-ref="moon" class="inline flex-shrink-0 w-5 h-5 swap-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"></path>
+</svg>
+            </label>
+    </div>
+    <script>
+        document.documentElement.setAttribute("data-theme", localStorage.getItem("mary-theme")?.replaceAll("\"", ""))
+        document.documentElement.setAttribute("class", localStorage.getItem("mary-class")?.replaceAll("\"", ""))
+    </script><!-- Livewire Scripts -->
+<script src="https://winninghousefulfillment.com/vendor/livewire/livewire.js?id=df3a17f2" data-csrf="poXUzNGlGQbNiyegabUhxVMMFOtEMk0Q6KUmh3Ft" data-update-uri="/livewire/update" data-navigate-once="true"></script>
+
+
+
+</body></html>

@@ -11,14 +11,19 @@ from flask import Flask, flash, jsonify, redirect, render_template, request, sen
 
 from modules import label_service
 from modules import resi_engine as eng
+from modules import scraper
+
+DB_AWB = {}
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 TMP_DIR = os.path.join(BASE_DIR, "tmp")
 API_SETTINGS_PATH = os.path.join(BASE_DIR, "api_settings.json")
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "downloads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(TMP_DIR, exist_ok=True)
+os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("DASHBOARD_SECRET_KEY", "change-this-secret")
@@ -27,6 +32,7 @@ app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024
 
 SIDEBAR_ITEMS = [
     {"key": "dashboard", "endpoint": "dashboard", "label": "Dashboard"},
+    {"key": "awb", "endpoint": "awb_page", "label": "Data AWB"},
     {"key": "label", "endpoint": "label_page", "label": "Label Generator"},
     {"key": "resi", "endpoint": "resi_page", "label": "Resi Matcher A6"},
     {"key": "api_settings", "endpoint": "api_settings_page", "label": "Pengaturan API Key"},
@@ -176,6 +182,11 @@ def _read_label_dataframe_from_request():
 @app.get("/")
 def dashboard():
     return render_template("dashboard.html", active_page="dashboard")
+
+
+@app.get("/awb")
+def awb_page():
+    return render_template("data_awb.html", active_page="awb")
 
 
 @app.get("/api-settings")
@@ -678,5 +689,128 @@ def api_resi_report(job_id):
     return send_file(path, mimetype="text/csv", as_attachment=True, download_name=f"RESI_REPORT_{safe_id}.csv")
 
 
+@app.route('/api/get_awb', methods=['GET'])
+def get_awb():
+    return jsonify({
+        "status": "success",
+        "data_awb": list(DB_AWB.values())
+    })
+
+@app.route('/api/upload_awb', methods=['POST'])
+def upload_awb():
+    print("[FLASK] Menerima request eksekusi scraping dari UI Dashboard...")
+    
+    USERNAME_ASLI = "gamamilk@winninghouse.com"
+    PASSWORD_ASLI = "winning123"
+    URL_LOGIN = "https://winninghousefulfillment.com/login"
+    URL_TARGET = "https://winninghousefulfillment.com/client/awb-documents"
+    
+    # Menjalankan robot Playwright secara headless=True
+    hasil_data_asli = scraper.scrape_data(USERNAME_ASLI, PASSWORD_ASLI, URL_LOGIN, URL_TARGET)
+    
+    # Masukkan hasil scraping ke database RAM
+    for item in hasil_data_asli:
+        if item["id"] not in DB_AWB:
+            DB_AWB[item["id"]] = item
+    
+    if not hasil_data_asli:
+        pesan = "Data AWB kosong, atau robot terblokir."
+    else:
+        pesan = f"Berhasil menarik {len(hasil_data_asli)} resi AWB!"
+        
+    return jsonify({
+        "status": "success",
+        "message": pesan,
+        "data_awb": list(DB_AWB.values())
+    })
+
+@app.route('/api/edit_awb', methods=['POST'])
+def edit_awb():
+    req = request.json
+    awb_id = req.get('id')
+    new_note = req.get('note')
+    
+    if awb_id in DB_AWB:
+        DB_AWB[awb_id]['note'] = new_note
+        return jsonify({"status": "success", "message": "Catatan diperbarui."})
+    return jsonify({"status": "error", "message": "ID tidak ditemukan."}), 404
+
+@app.route('/api/delete_awb', methods=['POST'])
+def delete_awb():
+    req = request.json
+    awb_id = req.get('id')
+    
+    if awb_id in DB_AWB:
+        del DB_AWB[awb_id]
+        return jsonify({"status": "success", "message": "Data dihapus."})
+    return jsonify({"status": "error", "message": "ID tidak ditemukan."}), 404
+
+@app.route('/api/check_duplicate_awb', methods=['GET', 'POST'])
+def check_duplicate_awb():
+    import glob
+    from collections import defaultdict
+    
+    # 1. Buka semua file PDF di folder downloads
+    pdf_files = glob.glob(os.path.join(DOWNLOAD_DIR, "*.pdf"))
+    
+    if not pdf_files:
+        return jsonify({
+            "status": "error",
+            "message": "Tidak ada file PDF di folder downloads."
+        })
+        
+    resi_map = defaultdict(list)
+    
+    # 2. Extract resi dari setiap file
+    for pdf_path in pdf_files:
+        filename = os.path.basename(pdf_path)
+        try:
+            doc = fitz.open(pdf_path)
+            for page in doc:
+                text = eng.extract_page_text_strong(page)
+                resis = eng.extract_resi_candidates(text)
+                
+                # Biar unik per halaman PDF kalau dia terdeteksi >1 kali di satu text block
+                page_resis = set(resis)
+                # Filter tambahan untuk mengurangi noise (tanggal, dll)
+                filtered_resis = []
+                for r in page_resis:
+                    if re.match(r'^\d{2}-\d{2}-\d{4}$', r) or re.match(r'^\d{8}$', r):
+                        continue # Ignore dd-mm-yyyy or ddmmyyyy candidates
+                    if r.startswith("PB") and len(r) < 12:
+                        continue # Ignore PB SKUs usually short
+                    if len(r) < 8:
+                        continue # Resi is usually >= 8 chars
+                    filtered_resis.append(r)
+                
+                for r in filtered_resis:
+                    resi_map[r].append(filename)
+            doc.close()
+        except Exception as e:
+            print(f"[!] Gagal membaca: {filename}. Error: {e}")
+            
+    # 3. Kumpulkan yang duplikat (muncul >= 2 kali)
+    duplicates = []
+    for r, files in resi_map.items():
+        if len(files) > 1:
+            duplicates.append({
+                "resi": r,
+                "appearances": len(files),
+                "files": list(set(files))  # set biar kalo di file sama ke-detect dua kali tetep ketahuan file mana saja
+            })
+            
+    # Sort by amount of appearances
+    duplicates.sort(key=lambda x: x["appearances"], reverse=True)
+    
+    message = f"Ditemukan {len(duplicates)} duplikasi resi." if duplicates else "Tidak ada resi ganda ditemukan."
+    
+    return jsonify({
+        "status": "success",
+        "message": message,
+        "duplicates": duplicates
+    })
+
+
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)

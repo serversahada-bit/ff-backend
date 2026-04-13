@@ -1,133 +1,92 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}PTSLU Dashboard{% endblock %}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ["Manrope", "ui-sans-serif", "system-ui", "sans-serif"],
-          },
-          colors: {
-            brand: {
-              50: "#ecfeff",
-              100: "#cffafe",
-              200: "#a5f3fc",
-              300: "#67e8f9",
-              400: "#22d3ee",
-              500: "#06b6d4",
-              600: "#0891b2",
-              700: "#0e7490",
-              800: "#155e75",
-              900: "#164e63",
-            },
-          },
-          boxShadow: {
-            soft: "0 20px 45px -22px rgba(15, 23, 42, 0.45)",
-          },
-        },
-      },
-    };
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PTSLU Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
-<body class="font-sans bg-slate-100 text-slate-900 antialiased">
-  <div class="min-h-screen bg-[radial-gradient(circle_at_top_left,_#d1fae5_0,_transparent_36%),radial-gradient(circle_at_bottom_right,_#bfdbfe_0,_transparent_30%)]">
-    <div class="min-h-screen lg:flex">
-      <aside
-        id="sidebar"
-        class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full transform border-r border-slate-200 bg-white/95 backdrop-blur transition duration-200 lg:static lg:translate-x-0"
-      >
-        <div class="flex h-full flex-col">
-          <div class="border-b border-slate-200 p-5">
-            <div class="flex items-center gap-3">
-              <div class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-sm font-extrabold text-white">PT</div>
-              <div>
-                <p class="text-sm font-extrabold tracking-tight text-slate-900">PTSLU Tools</p>
-                <p class="text-xs text-slate-500">Tailwind Dashboard</p>
-              </div>
+<body class="bg-slate-50 text-slate-800">
+
+<div class="flex h-screen overflow-hidden">
+    {% include "sidebar.html" %}
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden bg-slate-50 relative">
+        <!-- Header -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 shadow-sm relative z-10 shrink-0">
+            <div class="flex items-center">
+                <button
+                  id="sidebarToggle"
+                  type="button"
+                  class="mr-4 inline-flex items-center rounded-lg border border-slate-300 bg-white p-2 text-slate-700 shadow-sm hover:bg-slate-50 lg:hidden"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div class="hidden sm:flex border bg-slate-50 rounded-lg overflow-hidden items-center px-3 focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-300 transition-all w-64">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" placeholder="Cari data..." class="bg-transparent border-none focus:ring-0 text-sm ml-2 w-full py-2 outline-none">
+                </div>
             </div>
-          </div>
-
-          <nav class="space-y-1 p-4">
-            {% for item in sidebar_items %}
-              <a
-                href="{{ url_for(item.endpoint) }}"
-                class="group flex items-center justify-between rounded-xl border px-3 py-2 text-sm font-semibold transition {% if active_page == item.key %}border-brand-200 bg-brand-50 text-brand-800{% else %}border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900{% endif %}"
-              >
-                <span>{{ item.label }}</span>
-                {% if active_page == item.key %}
-                  <span class="h-2 w-2 rounded-full bg-brand-500"></span>
-                {% endif %}
-              </a>
-            {% endfor %}
-          </nav>
-
-          <div class="mt-auto border-t border-slate-200 p-4">
-            <p class="text-xs leading-relaxed text-slate-500">
-              Dashboard gabungan untuk Label Generator, Resi Matcher, dan pengaturan API.
-            </p>
-          </div>
-        </div>
-      </aside>
-
-      <div
-        id="sidebarOverlay"
-        class="fixed inset-0 z-30 hidden bg-slate-900/45 backdrop-blur-sm lg:hidden"
-      ></div>
-
-      <div class="min-w-0 flex-1">
-        <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-          <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-            <div>
-              <p class="text-sm font-bold text-slate-900">Operasional Dashboard</p>
-              <p class="text-xs text-slate-500">Modern responsive layout with Tailwind CSS</p>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3 text-right cursor-pointer hover:bg-slate-50 p-1.5 rounded-lg transition-colors">
+                    <div class="hidden sm:block">
+                        <p class="text-sm font-bold text-slate-800">PT SAHADA LAKU UTAMA</p>
+                        <p class="text-xs text-slate-500">gamamilk@winninghouse.com</p>
+                    </div>
+                    <div class="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm border border-blue-200">
+                        PS
+                    </div>
+                </div>
             </div>
-            <button
-              id="sidebarToggle"
-              type="button"
-              class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 lg:hidden"
-            >
-              Menu
-            </button>
-          </div>
         </header>
 
-        <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-              <section class="mb-5 space-y-2">
-                {% for category, msg in messages %}
-                  {% if category in ["success", "ok"] %}
-                    {% set box_class = "border-emerald-200 bg-emerald-50 text-emerald-800" %}
-                  {% elif category in ["danger", "error"] %}
-                    {% set box_class = "border-rose-200 bg-rose-50 text-rose-800" %}
-                  {% elif category in ["warning"] %}
-                    {% set box_class = "border-amber-200 bg-amber-50 text-amber-800" %}
-                  {% else %}
-                    {% set box_class = "border-slate-200 bg-white text-slate-700" %}
-                  {% endif %}
-                  <div class="rounded-xl border px-4 py-3 text-sm font-semibold shadow-soft {{ box_class }}">
-                    {{ msg }}
-                  </div>
-                {% endfor %}
-              </section>
-            {% endif %}
-          {% endwith %}
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto w-full p-4 sm:p-8">
+          <div class="mx-auto max-w-7xl">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <section class="mb-5 space-y-2">
+                  {% for category, msg in messages %}
+                    {% if category in ["success", "ok"] %}
+                      {% set box_class = "border-emerald-200 bg-emerald-50 text-emerald-800" %}
+                    {% elif category in ["danger", "error"] %}
+                      {% set box_class = "border-rose-200 bg-rose-50 text-rose-800" %}
+                    {% elif category in ["warning"] %}
+                      {% set box_class = "border-amber-200 bg-amber-50 text-amber-800" %}
+                    {% else %}
+                      {% set box_class = "border-slate-200 bg-white text-slate-700" %}
+                    {% endif %}
+                    <div class="rounded-lg border px-4 py-3 text-sm font-medium shadow-sm {{ box_class }}">
+                      {{ msg }}
+                    </div>
+                  {% endfor %}
+                </section>
+              {% endif %}
+            {% endwith %}
 
-          {% block content %}{% endblock %}
-        </main>
-      </div>
-    </div>
-  </div>
+            {% block content %}{% endblock %}
+          </div>
+        </div>
+    </main>
+</div>
 
-  <script>
+<script>
     (function () {
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebarOverlay");
@@ -165,6 +124,6 @@
         }
       });
     })();
-  </script>
+</script>
 </body>
 </html>

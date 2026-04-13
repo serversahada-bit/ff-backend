@@ -370,7 +370,7 @@ def extract_resi_candidates(text: str):
 
     def looks_like_product_or_box(code: str) -> bool:
         u = code.replace("-", "").replace("/", "")
-        if re.fullmatch(r"(GM|EC|GMP|PB|GN)\d{6,12}", u):
+        if re.fullmatch(r"(GM|EC|GMP|GP|PB|GN)\d{6,12}", u):
             return True
         if "CBHB" in u or "CBGM" in u:
             return True
@@ -560,11 +560,12 @@ def build_product_lines_from_row(row: pd.Series, max_items: int = 10) -> Dict[st
             name = f"{name} [{sku_val}]"
 
         else:
-            barang_keys = ["GMP", "GM", "EC", "PB", "GN"]
+            barang_keys = ["GMP", "GP", "GM", "EC", "PB", "GN"]
             for k in barang_keys:
                 if k in sku_upper:
                     name = {
                         "GM": "GAMAMILK",
+                        "GP": "GAMAMILK PLUS",
                         "EC": "ETACEFIT",
                         "GMP": "GAMAMILK PREMIUM",
                         "PB": "PHENOBODY",
