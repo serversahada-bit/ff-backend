@@ -69,20 +69,41 @@ def get_google_sheet_data(url: str) -> Optional[pd.DataFrame]:
         return None
 
 
-def _format_currency(raw_value: str) -> str:
-    if not raw_value:
+def _format_currency(raw_value) -> str:
+    if pd.isna(raw_value) or str(raw_value).strip() == "":
         return "Rp 0"
+        
+    if isinstance(raw_value, (int, float)):
+        return f"Rp {int(raw_value):,}".replace(",", ".")
+        
+    s = str(raw_value).strip()
+    clean_s = s.replace("Rp", "").strip()
+    
+    if "." in clean_s and "," in clean_s:
+        if clean_s.rfind(".") > clean_s.rfind(","):
+            clean_s = clean_s.replace(",", "")
+        else:
+            clean_s = clean_s.replace(".", "").replace(",", ".")
+    else:
+        if "," in clean_s:
+            parts = clean_s.split(",")
+            if len(parts[-1]) == 3 and len(parts) > 1:
+                clean_s = clean_s.replace(",", "")
+            else:
+                clean_s = clean_s.replace(",", ".")
+        elif "." in clean_s:
+            parts = clean_s.split(".")
+            if len(parts[-1]) == 3 and len(parts) > 1:
+                clean_s = clean_s.replace(".", "")
+            else:
+                pass
+                
+    clean_s = re.sub(r'[^\d\.]', '', clean_s)
+    
     try:
-        clean_value = (
-            str(raw_value)
-            .replace("Rp", "")
-            .replace(".", "")
-            .replace(",", "")
-            .strip()
-        )
-        val = float(clean_value)
+        val = float(clean_s)
         return f"Rp {int(val):,}".replace(",", ".")
-    except Exception:
+    except ValueError:
         return str(raw_value)
 
 
@@ -118,6 +139,7 @@ def process_dataframe(df: pd.DataFrame) -> List[Dict[str, object]]:
         "city": ["kota/kabupaten", "CITY", "KOTA", "Kota", "Kabupaten", "kabupaten"],
         "province": ["Provinsi", "PROVINCE", "PROVINSI", "Province"],
         "ongkir": ["COD VALUE", "Ongkir", "ONGKIR", "ongkir", "Ongkir (ID)", "OngkirValue"],
+        "harga_barang": ["Harga Barang", "Total Harga", "Total"],
         "comments": ["ISI PAKET", "Comments", "Notes", "Comment", "Isi Paket"],
         "courier": ["Ekspedisi", "ekspedisi", "Kurir", "kurir", "Courier", "Shipping", "Jasa Kirim"],
         "qty": ["JUMLAH BARANG", "JUMLAH", "Jumlah", "QTY", "Qty", "Quantity", "PCS", "Jml Barang", "Jml"],
@@ -126,6 +148,10 @@ def process_dataframe(df: pd.DataFrame) -> List[Dict[str, object]]:
         "product_qty_2nd": ["product_qty_2nd", "qty_2", "qty2", "QTY 2", "Produk 2 qty"],
         "product_name_3rd": ["product_name_3rd", "product_3", "product3", "Produk 3 sku"],
         "product_qty_3rd": ["product_qty_3rd", "qty_3", "qty3", "QTY 3", "Produk 3 qty"],
+        "product_name_4th": ["product_name_4th", "product_name_4rd", "product_4", "product4", "Produk 4 sku"],
+        "product_qty_4th": ["product_qty_4th", "product_qty_4rd", "qty_4", "qty4", "QTY 4", "Produk 4 qty"],
+        "product_name_5th": ["product_name_5th", "product_name_5rd", "product_5", "product5", "Produk 5 sku"],
+        "product_qty_5th": ["product_qty_5th", "product_qty_5rd", "qty_5", "qty5", "QTY 5", "Produk 5 qty"],
     }
 
     resolved = {}
@@ -177,9 +203,25 @@ def process_dataframe(df: pd.DataFrame) -> List[Dict[str, object]]:
         if p3_name or p3_qty:
             products.append({"name": p3_name, "qty": p3_qty or ""})
 
+        p4_name = g("product_name_4th")
+        p4_qty = g("product_qty_4th")
+        if p4_name or p4_qty:
+            products.append({"name": p4_name, "qty": p4_qty or ""})
+
+        p5_name = g("product_name_5th")
+        p5_qty = g("product_qty_5th")
+        if p5_name or p5_qty:
+            products.append({"name": p5_name, "qty": p5_qty or ""})
+
         primary_product_name = products[0]["name"] if products else product_name_1st
         qty_total = g("qty")
         primary_qty = products[0]["qty"] if products else qty_total
+
+        ongkir_val = g("ongkir")
+        if not ongkir_val or str(ongkir_val).strip() in ["0", "0.0", "-", "Rp 0", "NaN", "nan"]:
+            fallback = g("harga_barang")
+            if fallback:
+                ongkir_val = fallback
 
         item = {
             "code_full": raw_code,
@@ -191,7 +233,7 @@ def process_dataframe(df: pd.DataFrame) -> List[Dict[str, object]]:
             "receiver_name": g("first_name"),
             "receiver_phone": g("contact"),
             "receiver_address_lines": addr_parts,
-            "cod": _format_currency(g("ongkir")),
+            "cod": _format_currency(ongkir_val),
             "comments": g("comments"),
             "courier": courier_name,
             "courier_logo": courier_logo,
