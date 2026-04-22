@@ -138,7 +138,7 @@ def process_dataframe(df: pd.DataFrame) -> List[Dict[str, object]]:
         "kecamatan": ["KECAMATAN", "kecamatan", "Subdistrict", "Kec"],
         "city": ["kota/kabupaten", "CITY", "KOTA", "Kota", "Kabupaten", "kabupaten"],
         "province": ["Provinsi", "PROVINCE", "PROVINSI", "Province"],
-        "ongkir": ["COD VALUE", "Ongkir", "ONGKIR", "ongkir", "Ongkir (ID)", "OngkirValue"],
+        "ongkir": ["Ongkir", "ONGKIR", "ongkir", "Ongkir (ID)", "OngkirValue", "COD VALUE"],
         "harga_barang": ["Harga Barang", "Total Harga", "Total"],
         "comments": ["ISI PAKET", "Comments", "Notes", "Comment", "Isi Paket"],
         "courier": ["Ekspedisi", "ekspedisi", "Kurir", "kurir", "Courier", "Shipping", "Jasa Kirim"],
@@ -218,10 +218,6 @@ def process_dataframe(df: pd.DataFrame) -> List[Dict[str, object]]:
         primary_qty = products[0]["qty"] if products else qty_total
 
         ongkir_val = g("ongkir")
-        if not ongkir_val or str(ongkir_val).strip() in ["0", "0.0", "-", "Rp 0", "NaN", "nan"]:
-            fallback = g("harga_barang")
-            if fallback:
-                ongkir_val = fallback
 
         item = {
             "code_full": raw_code,
