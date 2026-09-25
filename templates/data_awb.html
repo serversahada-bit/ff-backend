@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Upload AWB | PTSLU{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-end mb-8">
+    <div>
+        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Upload AWB</h2>
+        <p class="text-sm text-slate-500 mt-1 font-medium">Bekerja secara lokal dengan dukungan robot Playwright tersembunyi.</p>
+    </div>
+    <div class="flex space-x-3">
+        <button onclick="loadData()" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center shadow-sm">
+            Refresh Lokal
+        </button>
+        <button id="btnCheckDuplicate" class="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600 transition flex items-center shadow-md hover:shadow-lg transform active:scale-95">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Cek Duplikasi Resi
+        </button>
+        <button id="btnScrape" class="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center shadow-md hover:shadow-lg transform active:scale-95">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            Jalankan Scraper
+        </button>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <table class="w-full text-left border-collapse">
+        <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                <th class="p-4 w-12 text-center">No</th>
+                <th class="p-4">Info Dokumen AWB</th>
+                <th class="p-4">Status</th>
+                <th class="p-4 text-center">Aktivitas Cetak</th>
+                <th class="p-4 text-right">Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody" class="divide-y divide-slate-100">
+            <!-- Disisipkan via JS -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Loading -->
+<div id="loadingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 transition-all">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full mx-4 border border-slate-100">
+        <div class="relative">
+            <svg class="animate-spin h-12 w-12 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
+        <p class="text-slate-800 font-bold text-lg mt-5">Memproses Data...</p>
+        <p class="text-slate-500 text-sm mt-1 text-center">Browser tersembunyi sedang bekerja. Mohon tunggu s/d 10 detik.</p>
+    </div>
+</div>
+
+<!-- Modal Duplicate Report -->
+<div id="duplicateModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 transition-all">
+    <div class="bg-white rounded-2xl shadow-2xl flex flex-col max-w-2xl w-full mx-4 border border-slate-100 max-h-[80vh] overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="text-lg font-bold text-slate-800">Laporan Duplikasi Resi</h3>
+            <button onclick="closeDuplicateModal()" class="text-slate-400 hover:text-slate-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto" id="duplicateReportContent">
+            <!-- Disisipkan via JS -->
+        </div>
+        <div class="p-4 border-t border-slate-100 bg-slate-50 text-right">
+            <button onclick="closeDuplicateModal()" class="px-5 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-300 transition-colors">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Memuat data lokal saat UI dibuka
+    const loadData = async () => {
+        try {
+            const res = await fetch('/api/get_awb');
+            const result = await res.json();
+            renderTable(result.data_awb);
+        } catch(e) {}
+    };
+
+    const renderTable = (data) => {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        if(!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">Data Kosong. Tekan Scraper.</td></tr>';
+            return;
+        }
+
+        data.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-50 transition-colors";
+            tr.innerHTML = `
+                <td class="p-4 text-center font-medium text-slate-500">${index + 1}</td>
+                <td class="p-4">
+                    <p class="text-blue-600 font-bold">${item.id}</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="inline-flex items-center text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-bold border border-indigo-100">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            ${item.date || 'Otomatis'}
+                        </span>
+                        <p class="text-xs text-slate-500">${item.filename}</p>
+                    </div>
+                    <p id="note-${item.id}" class="text-[11px] text-orange-500 mt-0.5 italic font-medium">${item.note}</p>
+                </td>
+                <td class="p-4">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        ${item.status_code || 'N/A'}
+                    </span>
+                </td>
+                <td class="p-4 text-center">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">
+                        1x Terunduh / Tersimpan
+                    </span>
+                </td>
+                <td class="p-4 text-right">
+                    <div class="flex items-center gap-2 justify-end">
+                        <button onclick="editAWB('${item.id}')" class="px-2 py-1 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 rounded text-xs font-semibold transition" title="Edit Note">
+                            Edit
+                        </button>
+                        <button onclick="deleteAWB('${item.id}')" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-xs font-semibold transition" title="Hapus Data">
+                            Hapus
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    document.getElementById('btnScrape').addEventListener('click', async () => {
+        const modal = document.getElementById('loadingModal');
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+        
+        try {
+            const response = await fetch('/api/upload_awb', { method: 'POST' });
+            const result = await response.json();
+            renderTable(result.data_awb);
+        } catch (e) {
+            alert("Gagal melakukan scraping.");
+        } finally {
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+        }
+    });
+
+    // FUNGSI EDIT
+    window.editAWB = async (id) => {
+        let text = prompt("Masukkan Keterangan (Note) Baru untuk " + id + ":");
+        if(text !== null) {
+            try {
+                const response = await fetch('/api/edit_awb', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id: id, note: text})
+                });
+                if(response.ok) loadData();
+            } catch(e) { alert("Error mengedit data"); }
+        }
+    };
+
+    // FUNGSI DELETE
+    window.deleteAWB = async (id) => {
+        if(confirm("Yakin ingin menghapus " + id + " dari UI lokal ini?")) {
+            try {
+                const response = await fetch('/api/delete_awb', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id: id})
+                });
+                if(response.ok) loadData();
+            } catch(e) { alert("Error menghapus data"); }
+        }
+    };
+
+    // Panggil saat pertama kali load halaman
+    loadData();
+
+    // FUNGSI CEK DUPLIKASI RESI
+    document.getElementById('btnCheckDuplicate').addEventListener('click', async () => {
+        const modal = document.getElementById('loadingModal');
+        // change loading text to checking duplicate
+        modal.querySelector('p.font-bold').innerText = "Memeriksa Duplikasi Resi...";
+        modal.querySelector('p.text-sm').innerText = "Membaca puluhan halaman PDF untuk mencari resi ganda.";
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+        
+        try {
+            const response = await fetch('/api/check_duplicate_awb', { method: 'POST' });
+            const result = await response.json();
+            
+            if(result.status === 'success') {
+                showDuplicateReport(result.duplicates, result.message);
+            } else {
+                alert(result.message || "Gagal memeriksa duplikasi.");
+            }
+        } catch (e) {
+            alert("Terjadi kesalahan jaringan.");
+        } finally {
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+            // reset loading text
+            modal.querySelector('p.font-bold').innerText = "Memproses Data...";
+            modal.querySelector('p.text-sm').innerText = "Browser tersembunyi sedang bekerja. Mohon tunggu s/d 10 detik.";
+        }
+    });
+
+    const showDuplicateReport = (duplicates, message) => {
+        const content = document.getElementById('duplicateReportContent');
+        if(!duplicates || duplicates.length === 0) {
+            content.innerHTML = `
+                <div class="text-center py-10">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 mb-6 relative">
+                        <div class="absolute inset-0 bg-emerald-200 rounded-full animate-ping opacity-20"></div>
+                        <svg class="w-10 h-10 text-emerald-600 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h4 class="text-xl font-black text-slate-800 tracking-tight">Aman! Tidak Ada Duplikasi</h4>
+                    <p class="text-slate-500 mt-2 font-medium">Semua dokumen AWB memiliki resi yang unik. Anda siap melakukan proses selanjutnya.</p>
+                </div>
+            `;
+        } else {
+            let html = `
+                <div class="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 flex items-start shadow-sm">
+                    <div class="bg-amber-100 p-2 rounded-lg mr-4">
+                        <svg class="w-6 h-6 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg">${message}</h4>
+                        <p class="text-sm mt-1 text-amber-700 font-medium">Harap periksa kembali AWB berikut untuk menghindari pengiriman paket ganda. Ini akan membantu Anda menghemat kerugian.</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+            `;
+            duplicates.forEach(dup => {
+                html += `
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-3 pb-3 border-b border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-slate-100 p-1.5 rounded-md">
+                                    <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                                </span>
+                                <h5 class="font-extrabold text-slate-900 text-lg tracking-tight">${dup.resi}</h5>
+                            </div>
+                            <span class="px-3 py-1 bg-rose-100 text-rose-700 text-xs font-bold rounded-full border border-rose-200 shadow-sm flex items-center">
+                                <span class="w-1.5 h-1.5 bg-rose-500 rounded-full mr-1.5 animate-pulse"></span>
+                                Muncul ${dup.appearances}x
+                            </span>
+                        </div>
+                        <p class="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">Ditemukan Berulang Pada Dokumen:</p>
+                        <ul class="space-y-2 mt-2">
+                `;
+                dup.files.forEach(f => {
+                    html += `
+                        <li class="flex items-center text-sm font-medium text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                            <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> 
+                            ${f}
+                        </li>`;
+                });
+                html += `</ul></div>`;
+            });
+            html += `</div>`;
+            content.innerHTML = html;
+        }
+        
+        document.getElementById('duplicateModal').classList.remove('hidden');
+        document.getElementById('duplicateModal').classList.add('flex');
+    };
+
+    window.closeDuplicateModal = () => {
+        document.getElementById('duplicateModal').classList.remove('flex');
+        document.getElementById('duplicateModal').classList.add('hidden');
+    };
+</script>
+{% endblock %}

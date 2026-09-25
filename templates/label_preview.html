@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Cetak Resi Herbiyon</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: "Arial", Helvetica, sans-serif;
+      background: #e5e7eb;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .page-info {
+      font-size: 11px;
+      color: #4b5563;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    /* ==== TAMPILAN LABEL (PREVIEW) ==== */
+    .label {
+      width: 10cm;
+      /* Lebar standar thermal */
+      height: 15cm;
+      /* Tinggi standar thermal */
+      background: #fff;
+      margin: 16px auto;
+      padding: 10px;
+      border: 1px solid #000;
+      font-size: 10px;
+      line-height: 1.3;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- HEADER --- */
+    .label-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #000;
+      padding-bottom: 5px;
+      margin-bottom: 5px;
+      height: 45px;
+      /* Tinggi fix untuk header */
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .logo-img {
+      width: auto;
+      height: 35px;
+      object-fit: contain;
+    }
+
+    .for-box {
+      border: 1px solid #000;
+      padding: 2px 5px;
+      font-size: 9px;
+      width: 120px;
+    }
+
+    .courier-box {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      width: 80px;
+      /* lebar tetap */
+      height: 35px;
+      /* tinggi tetap */
+      overflow: hidden;
+    }
+
+    .courier-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .courier-text {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: right;
+    }
+
+    /* --- BARCODE AREA --- */
+    .code-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .barcode-section {
+      flex: 1;
+      padding-right: 5px;
+    }
+
+    .nvid-text {
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 2px;
+    }
+
+    .barcode-img {
+      width: 100%;
+      height: 50px;
+      /* Tinggi barcode fix */
+      object-fit: fill;
+    }
+
+    .qr-img {
+      width: 70px;
+      height: 70px;
+      border: 1px solid #eee;
+    }
+
+    /* --- TABLE ALAMAT --- */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #000;
+      flex-grow: 1;
+      /* Isi sisa ruang vertical */
+    }
+
+    .info-table th {
+      background: #f0f0f0;
+      border-bottom: 1px solid #000;
+      border-right: 1px solid #000;
+      font-size: 9px;
+      text-align: left;
+      padding: 4px;
+      width: 50%;
+    }
+
+    .info-table th:last-child {
+      border-right: none;
+    }
+
+    .info-table td {
+      border-right: 1px solid #000;
+      vertical-align: top;
+      padding: 5px;
+    }
+
+    .info-table td:last-child {
+      border-right: none;
+    }
+
+    .name-bold {
+      font-weight: 800;
+      font-size: 11px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .phone {
+      font-family: monospace;
+      font-size: 11px;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .address {
+      font-size: 10px;
+      word-wrap: break-word;
+    }
+
+    /* --- FOOTER AREA --- */
+    .footer-area {
+      margin-top: 5px;
+    }
+
+    .cod-box {
+      border: 2px solid #000;
+      padding: 5px;
+      font-weight: bold;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .comments-box {
+      border: 1px solid #000;
+      padding: 5px;
+      font-size: 10px;
+      min-height: 40px;
+      margin-bottom: 5px;
+    }
+
+    /* --- BANNER UNBOXING --- */
+    .unboxing-banner {
+      background: #000;
+      color: #fff;
+      font-weight: 900;
+      font-size: 14px;
+      text-align: center;
+      text-transform: uppercase;
+      padding: 6px 2px;
+      border: 2px solid #000;
+      font-family: "Arial Black", Arial, sans-serif;
+      letter-spacing: 0.5px;
+    }
+
+    /* --- JUMLAH BARANG BOX --- */
+    .qty-box {
+      border: 1px solid #000;
+      padding: 4px;
+      font-size: 11px;
+      font-weight: normal;
+      text-align: left;
+      margin-top: 4px;
+      text-transform: none;
+    }
+
+    .qty-title {
+      font-size: 10px;
+      font-weight: bold;
+      margin-bottom: 2px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .qty-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+    }
+
+    /* ==== SETTINGAN PRINT ==== */
+    @media print {
+      @page {
+        size: 100mm 150mm;
+        /* Kertas Thermal 10x15 */
+        margin: 0;
+      }
+
+      body {
+        padding: 0;
+        background: #fff;
+      }
+
+      .page-info {
+        display: none;
+      }
+
+      .label {
+        margin: 0;
+        border: none;
+        page-break-after: always;
+        width: 100mm;
+        height: 150mm;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page-info">
+    Dicetak pada: {{ ts }} &bull; Total: {{ labels|length }} Label
+    <br><i>Gunakan kertas thermal ukuran 100mm x 150mm (A6)</i>
+  </div>
+
+  {% for l in labels %}
+  <div class="label">
+
+    <div class="label-header">
+      <div class="header-left">
+        <img class="logo-img" src="{{ url_for('static', filename='img/logo.png') }}" alt="HERBIYON Logo">
+        <div class="for-box">Herbiyon:</div>
+      </div>
+
+      <div class="courier-box">
+        {% if l.courier_logo %}
+        <img class="courier-img" src="{{ url_for('static', filename='img/' ~ l.courier_logo) }}"
+          alt="{{ l.courier or 'Ekspedisi' }}">
+        {% elif l.courier %}
+        <span class="courier-text">{{ l.courier }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="code-row">
+      <div class="barcode-section">
+        <div class="nvid-text">{{ l.code_full }}</div>
+        <img class="barcode-img" src="data:image/png;base64,{{ l.barcode_b64 }}" alt="barcode">
+      </div>
+      <img class="qr-img" src="data:image/png;base64,{{ l.qr_b64 }}" alt="QR">
+    </div>
+
+    <div style="font-size:9px; margin-bottom:4px;">
+      Order Ref: {{ l.code_full }}
+    </div>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>FROM (SENDER)</th>
+          <th>TO (ADDRESSEE)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="name-bold">{{ l.sender_name }}</div>
+            <span class="phone">{{ l.sender_phone }}</span>
+            <div class="address">
+              {% for line in l.sender_address_lines %}
+              {{ line }}<br>
+              {% endfor %}
+            </div>
+          </td>
+
+          <td>
+            <div class="name-bold">{{ l.receiver_name }}</div>
+            <span class="phone">{{ l.receiver_phone }}</span>
+            <div class="address">
+              {% for line in l.receiver_address_lines %}
+              {{ line }}<br>
+              {% endfor %}
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer-area">
+      <div class="cod-box">
+        <span>ESTIMASI ONGKIR:</span>
+        <span>{{ l.cod }}</span>
+      </div>
+      <div class="comments-box">
+        <strong>Notes / Isi Paket:</strong><br>
+        {{ l.comments }}
+      </div>
+
+      <div class="unboxing-banner">
+        WAJIB VIDEO PROSES UNBOXING!!!
+      </div>
+
+      {% if l.products and l.products|length > 0 %}
+      <div class="qty-box">
+        <div class="qty-title">Produk &amp; Jumlah</div>
+        {% for it in l.products %}
+        <div class="qty-row">
+          <span>{{ it.name }}</span>
+          <span>{{ it.qty }} pcs</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+  {% endfor %}
+
+  <script>
+    window.onload = function () {
+      // window.print();
+    }
+  </script>
+</body>
+
+</html>
