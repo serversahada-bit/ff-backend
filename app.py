@@ -25,6 +25,7 @@ DOWNLOAD_DIR = os.path.join(BASE_DIR, "downloads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(TMP_DIR, exist_ok=True)
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+print(f"[*] Database produk: {produk_db.DB_HOST}:{produk_db.DB_PORT}/{produk_db.DB_NAME} ({produk_db._config_source()})")
 try:
     produk_db.init_db()
 except produk_db.DBError as exc:

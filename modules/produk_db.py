@@ -11,6 +11,14 @@ def _env(name: str, default: str) -> str:
     return os.environ.get(f"PRODUK_{name}") or os.environ.get(name) or default
 
 
+def _config_source() -> str:
+    if os.environ.get("PRODUK_DB_HOST"):
+        return "PRODUK_DB_HOST dari environment"
+    if os.environ.get("DB_HOST"):
+        return "DB_HOST dari environment"
+    return "default XAMPP, DB_HOST tidak ditemukan di environment"
+
+
 # Koneksi MySQL. Default = setelan bawaan XAMPP (root tanpa password).
 DB_HOST = _env("DB_HOST", "127.0.0.1")
 DB_PORT = int(_env("DB_PORT", "3306"))
@@ -67,8 +75,8 @@ def _connect(with_db: bool = True):
         )
     except pymysql.err.OperationalError as exc:
         raise DBError(
-            f"Tidak bisa konek ke database MySQL ({DB_HOST}:{DB_PORT}). "
-            f"Pastikan MySQL sudah di-Start di XAMPP Control Panel. Detail: {exc.args[-1]}"
+            f"Tidak bisa konek ke database MySQL {DB_HOST}:{DB_PORT}/{DB_NAME} "
+            f"(setting: {_config_source()}). Detail: {exc.args[-1]}"
         )
 
 
