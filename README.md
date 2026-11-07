@@ -39,6 +39,17 @@ Buka:
 http://127.0.0.1:5000
 ```
 
+## Database Master Produk (XAMPP)
+
+Nama produk di label A6 diambil dari tabel `produk_rules` di MySQL (XAMPP).
+
+1. Buka XAMPP Control Panel, klik **Start** pada MySQL.
+2. Jalankan aplikasi. Database `ptslu` dan tabelnya dibuat otomatis, berisi data produk awal.
+3. Tambah/edit produk lewat menu **Master Produk**, atau lewat phpMyAdmin (`http://localhost/phpmyadmin`, database `ptslu`).
+
+Default koneksi: `root` tanpa password di `127.0.0.1:3306`. Bisa diubah lewat environment variable
+`PRODUK_DB_HOST`, `PRODUK_DB_PORT`, `PRODUK_DB_USER`, `PRODUK_DB_PASSWORD`, `PRODUK_DB_NAME`.
+
 ## Struktur Folder
 
 ```text

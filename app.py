@@ -10,6 +10,7 @@ import pandas as pd
 from flask import Flask, flash, jsonify, redirect, render_template, request, send_file, session, url_for
 
 from modules import label_service
+from modules import produk_db
 from modules import resi_engine as eng
 from modules import scraper
 
@@ -24,6 +25,10 @@ DOWNLOAD_DIR = os.path.join(BASE_DIR, "downloads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(TMP_DIR, exist_ok=True)
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+try:
+    produk_db.init_db()
+except produk_db.DBError as exc:
+    print(f"[!] {exc}")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("DASHBOARD_SECRET_KEY", "change-this-secret")
@@ -35,6 +40,7 @@ SIDEBAR_ITEMS = [
     {"key": "awb", "endpoint": "awb_page", "label": "Data AWB"},
     {"key": "label", "endpoint": "label_page", "label": "Label Generator"},
     {"key": "resi", "endpoint": "resi_page", "label": "Resi Matcher A6"},
+    {"key": "produk", "endpoint": "produk_page", "label": "Master Produk"},
     {"key": "api_settings", "endpoint": "api_settings_page", "label": "Pengaturan API Key"},
 ]
 
@@ -410,6 +416,8 @@ def _build_resi_output(df, col_resi, col_nama, col_telp, match_mode, max_pages, 
         except Exception:
             docs[filename] = None
 
+    produk_rules = produk_db.load_rules()
+
     groups = defaultdict(list)
     for item in matched_items:
         groups[item["resi"]].append(item)
@@ -423,7 +431,7 @@ def _build_resi_output(df, col_resi, col_nama, col_telp, match_mode, max_pages, 
                 continue
             png = eng.pdf_page_to_png_bytes(doc, item["page0"], zoom=zoom)
             row = df.iloc[int(item["matched_idx"])]
-            produk_lines = eng.build_product_lines_from_row(row, max_items=max_produk)
+            produk_lines = eng.build_product_lines_from_row(row, max_items=max_produk, rules=produk_rules)
             export_pages.append({"png_bytes": png, "produk": produk_lines, "resi": item["resi"]})
 
     for doc in docs.values():
@@ -555,6 +563,71 @@ def resi_reset():
         session.pop(key, None)
     flash("Reset OK.", "ok")
     return redirect(url_for("resi_page") + "#generate")
+
+
+@app.get("/produk")
+def produk_page():
+    rules = []
+    cek_sku = (request.args.get("cek") or "").strip()
+    cek_hasil = None
+    try:
+        rules = produk_db.list_rules()
+        if cek_sku:
+            row = pd.Series({"Produk 1 sku": cek_sku, "Produk 1 qty": "1"})
+            lines = eng.build_product_lines_from_row(row, max_items=1)
+            for cat in ["BOX", "BARANG", "HADIAH"]:
+                if lines[cat]:
+                    cek_hasil = {"kategori": cat, "nama": lines[cat][0][0]}
+                    break
+    except produk_db.DBError as exc:
+        flash(str(exc), "error")
+
+    edit_rule = None
+    edit_id = request.args.get("edit", type=int)
+    if edit_id:
+        edit_rule = next((r for r in rules if r["id"] == edit_id), None)
+
+    return render_template(
+        "produk.html",
+        active_page="produk",
+        rules=rules,
+        kategori_list=produk_db.KATEGORI,
+        cek_sku=cek_sku,
+        cek_hasil=cek_hasil,
+        edit_rule=edit_rule,
+    )
+
+
+@app.post("/produk/save")
+def produk_save():
+    rule_id = request.form.get("id", type=int)
+    kode = request.form.get("kode", "")
+    nama = request.form.get("nama", "")
+    kategori = request.form.get("kategori", "BARANG")
+    try:
+        if rule_id:
+            produk_db.update_rule(rule_id, kode, nama, kategori)
+            flash(f"Produk {produk_db.normalize_kode(kode)} berhasil diperbarui.", "ok")
+        else:
+            produk_db.add_rule(kode, nama, kategori)
+            flash(f"Produk {produk_db.normalize_kode(kode)} berhasil ditambahkan.", "ok")
+    except (ValueError, produk_db.DBError) as exc:
+        flash(str(exc), "error")
+        if rule_id:
+            return redirect(url_for("produk_page", edit=rule_id))
+    return redirect(url_for("produk_page"))
+
+
+@app.post("/produk/delete")
+def produk_delete():
+    rule_id = request.form.get("id", type=int)
+    if rule_id:
+        try:
+            produk_db.delete_rule(rule_id)
+            flash("Produk dihapus.", "ok")
+        except produk_db.DBError as exc:
+            flash(str(exc), "error")
+    return redirect(url_for("produk_page"))
 
 
 @app.after_request

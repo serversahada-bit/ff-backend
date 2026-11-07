@@ -12,6 +12,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 
+from modules import produk_db
+
 # ================= CONFIG =================
 MASTER_URL_DEFAULT = "https://docs.google.com/spreadsheets/d/1ILxRMeDewtfLGckkPcY2CHHXiBtKK4Gc__lTNUZxGis/edit?gid=727982747#gid=727982747"
 
@@ -374,7 +376,7 @@ def extract_resi_candidates(text: str):
 
     def looks_like_product_or_box(code: str) -> bool:
         u = code.replace("-", "").replace("/", "")
-        if re.fullmatch(r"(GM|EC|GMP|GP|PB|GN)\d{6,12}", u):
+        if re.fullmatch(r"(GM|EC|GMP|GP|GPE|PB|GN)\d{6,12}", u):
             return True
         if "CBHB" in u or "CBGM" in u:
             return True
@@ -519,7 +521,9 @@ def match_pdf_candidates(
 
 
 # ================= PRODUCT PARSING =================
-def build_product_lines_from_row(row: pd.Series, max_items: int = 10) -> Dict[str, List[Tuple[str, str]]]:
+def build_product_lines_from_row(row: pd.Series, max_items: int = 10, rules: Optional[List[dict]] = None) -> Dict[str, List[Tuple[str, str]]]:
+    if rules is None:
+        rules = produk_db.load_rules()
     merged = {"BOX": {}, "BARANG": {}, "HADIAH": {}}
 
     for i in range(1, 11):
@@ -542,46 +546,11 @@ def build_product_lines_from_row(row: pd.Series, max_items: int = 10) -> Dict[st
         if ("CBHB" in sku_upper) or ("CBGM" in sku_upper) or ("BOX" in sku_upper) or ("KARDUS" in sku_upper):
             cat = "BOX"
             name = format_consumable_box(sku_val)
-
-        elif any(k in sku_upper for k in ["TASBIH", "GLAS", "SPTL", "SHKR", "HADIAH", "BONUS", "TOPLES", "FLYER", "PANDUAN", "TOTEBAG", "CSO", "CRM"]):
-            cat = "HADIAH"
-            if "TASBIH" in sku_upper:
-                name = "Hadiah Tasbih Digital"
-            elif "GLAS" in sku_upper:
-                name = "Hadiah Gelas"
-            elif "SPTL" in sku_upper:
-                name = "Hadiah Spatula"
-            elif "SHKR" in sku_upper:
-                name = "Hadiah Shaker"
-            elif "TOPLES" in sku_upper:
-                name = "Hadiah Toples"
-            elif "FLYER" in sku_upper:
-                name = "Hadiah Flyer"
-            elif "PANDUAN" in sku_upper:
-                name = "Bonus Panduan"
-            elif "TOTEBAG" in sku_upper:
-                name = "Hadiah Totebag"
-            else:
-                name = "Hadiah/Bonus"
-            if sku_upper != name.upper():
-                name = f"{name} [{sku_val}]"
-
         else:
-            barang_keys = ["GMP", "GMS", "GP", "GM", "EC", "PB", "GN"]
-            for k in barang_keys:
-                if k in sku_upper:
-                    name = {
-                        "GM": "GAMAMILK",
-                        "GP": "GAMAMILK PLUS",
-                        "EC": "ETACEFIT",
-                        "GMP": "GAMAMILK PREMIUM",
-                        "GMS": "GAMAMILK SEREAL",
-                        "PB": "PHENOBODY",
-                        "GN": "GNAIT",
-                    }[k]
-                    cat = "BARANG"
-                    name = f"{name} [{sku_val}]"
-                    break
+            # Nama produk diambil dari database Master Produk (menu sidebar)
+            resolved = produk_db.resolve_sku(sku_val, rules)
+            if resolved:
+                cat, name = resolved
 
         if not name:
             name = f"{sku_val}"
