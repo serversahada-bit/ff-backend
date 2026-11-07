@@ -47,8 +47,8 @@ Nama produk di label A6 diambil dari tabel `produk_rules` di MySQL (XAMPP).
 2. Jalankan aplikasi. Database `ptslu` dan tabelnya dibuat otomatis, berisi data produk awal.
 3. Tambah/edit produk lewat menu **Master Produk**, atau lewat phpMyAdmin (`http://localhost/phpmyadmin`, database `ptslu`).
 
-Default koneksi: `root` tanpa password di `127.0.0.1:3306`. Bisa diubah lewat environment variable
-`PRODUK_DB_HOST`, `PRODUK_DB_PORT`, `PRODUK_DB_USER`, `PRODUK_DB_PASSWORD`, `PRODUK_DB_NAME`.
+Default koneksi: `root` tanpa password di `127.0.0.1:3306`. Di server (Coolify), isi environment variable
+`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` (atau versi berawalan `PRODUK_`, yang didahulukan).
 
 ## Struktur Folder
 

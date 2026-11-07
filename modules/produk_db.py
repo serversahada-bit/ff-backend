@@ -5,12 +5,18 @@ from typing import Dict, List, Optional, Tuple
 import pymysql
 from pymysql.cursors import DictCursor
 
-# Koneksi MySQL XAMPP. Default = setelan bawaan XAMPP (root tanpa password).
-DB_HOST = os.environ.get("PRODUK_DB_HOST", "127.0.0.1")
-DB_PORT = int(os.environ.get("PRODUK_DB_PORT", "3306"))
-DB_USER = os.environ.get("PRODUK_DB_USER", "root")
-DB_PASSWORD = os.environ.get("PRODUK_DB_PASSWORD", "")
-DB_NAME = os.environ.get("PRODUK_DB_NAME", "ptslu")
+
+def _env(name: str, default: str) -> str:
+    # PRODUK_DB_* didahulukan, lalu DB_* (nama yang dipakai di Coolify)
+    return os.environ.get(f"PRODUK_{name}") or os.environ.get(name) or default
+
+
+# Koneksi MySQL. Default = setelan bawaan XAMPP (root tanpa password).
+DB_HOST = _env("DB_HOST", "127.0.0.1")
+DB_PORT = int(_env("DB_PORT", "3306"))
+DB_USER = _env("DB_USER", "root")
+DB_PASSWORD = _env("DB_PASSWORD", "")
+DB_NAME = _env("DB_NAME", "ptslu")
 
 KATEGORI = ["BARANG", "HADIAH", "BOX"]
 KODE_MAX_LEN = 64
